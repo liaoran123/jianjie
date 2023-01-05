@@ -52,11 +52,7 @@ func pubtbposts(w http.ResponseWriter, req *http.Request) {
 	defer mu.Unlock()
 	var r xbdb.ReInfo
 	params := postparas(req)
-	if !VerifyTime(params["md5code"], params["capid"]) {
-		r.Info = "错误，请重试"
-		json.NewEncoder(w).Encode(r)
-		return
-	}
+
 	if !store.Verify(params["capid"], params["code"], true) {
 		r.Info = "验证码不正确！"
 		json.NewEncoder(w).Encode(r)
