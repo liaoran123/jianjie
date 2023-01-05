@@ -1,4 +1,5 @@
 {
     "port":"8050",   
-    "dbpath":"F:/dababase/fojingjianjie/"
+    "dbpath":"F:/dababase/fojingjianjie/",
+    "md5code":"123456"
 }

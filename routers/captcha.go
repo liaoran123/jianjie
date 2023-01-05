@@ -1,6 +1,7 @@
 package routers
 
 import (
+	"encoding/json"
 	"net/http"
 
 	captcha "github.com/mojocn/base64Captcha"
@@ -45,3 +46,18 @@ func CaptchaVerifyHandle(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(body)
 }
 */
+// 生成Md5加密码
+func Md5code(w http.ResponseWriter, r *http.Request) {
+	id := r.URL.Query().Get("id")
+	answer := store.Get(id, false)
+	t := ConfigMap["md5code"].(string) + answer
+	t = Md5(t)
+	body := map[string]interface{}{"md5code": t}
+	json.NewEncoder(w).Encode(body)
+}
+func VerifyTime(md5code, id string) (r bool) {
+	answer := store.Get(id, false)
+	t := ConfigMap["md5code"].(string) + answer
+	t = Md5(t)
+	return t == md5code
+}
