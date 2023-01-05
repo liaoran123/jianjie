@@ -2,8 +2,8 @@ package routers
 
 import (
 	"fmt"
-	"log"
 	"jianjie/xbdb"
+	"log"
 
 	"github.com/syndtr/goleveldb/leveldb"
 )
@@ -72,7 +72,7 @@ func createjianjie(tbifo *xbdb.TableInfo) {
 //点赞数表
 func createdzan(tbifo *xbdb.TableInfo) {
 	name := "dzan"                      //目录表，
-	fields := []string{"id", "shu"}     //字段 见解表的编码，点赞数
+	fields := []string{"id", "userid"}  //字段 见解表的编码，点赞数
 	fieldType := []string{"int", "int"} //字段
 	idxs := []string{"1"}               //索引字段,fields的下标对应的字段。支持组合查询，字段之间用,分隔
 	fullText := []string{}              //考据级全文搜索索引字段的下标。
