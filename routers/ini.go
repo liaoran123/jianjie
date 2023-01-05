@@ -47,7 +47,7 @@ func Pr(rd []byte) bool {
 
 //创建用户表
 func createuser(tbifo *xbdb.TableInfo) {
-	name := "user"                                                                 //目录表
+	name := "u"                                                                    //user                                                              //目录表
 	fields := []string{"id", "email", "psw", "fahao", "jianjie", "sj"}             //字段，编码，邮箱，密码，法号。简介，注册时间。
 	fieldType := []string{"int", "string", "string", "string", "string", "string"} //字段
 	idxs := []string{"1", "3"}                                                     //索引字段,fields的下标对应的字段。支持组合查询，字段之间用,分隔
@@ -59,7 +59,7 @@ func createuser(tbifo *xbdb.TableInfo) {
 
 //创建见解表
 func createjianjie(tbifo *xbdb.TableInfo) {
-	name := "jianjie"                                                                        //目录表
+	name := "j"                                                                              //jianjie                                                                   //目录表
 	fields := []string{"id", "userid", "fahao", "secid", "sectext", "text", "sj"}            //字段，编码，对应的用户id编码，经文，内容，发布时间。将jingwen记录下来，以免将来改变大藏经结构导致数据不一致。
 	fieldType := []string{"int", "string", "string", "string", "string", "string", "string"} //字段
 	idxs := []string{"1", "3"}                                                               ////索引字段,fields的下标对应的字段。支持组合查询，字段之间用,分隔
@@ -71,12 +71,12 @@ func createjianjie(tbifo *xbdb.TableInfo) {
 
 //点赞数表
 func createdzan(tbifo *xbdb.TableInfo) {
-	name := "dzan"                      //目录表，
-	fields := []string{"id", "userid"}  //字段 见解表的编码，点赞数
-	fieldType := []string{"int", "int"} //字段
-	idxs := []string{"1"}               //索引字段,fields的下标对应的字段。支持组合查询，字段之间用,分隔
-	fullText := []string{}              //考据级全文搜索索引字段的下标。
-	ftlen := "7"                        //全文搜索的长度，中文默认是7
+	name := "d"                     //dzan               //点赞表，
+	fields := []string{"id"}        //字段 id是见解表的编码和userid组成，每个用户的点赞都记录下来
+	fieldType := []string{"string"} //字段
+	idxs := []string{}              //索引字段,fields的下标对应的字段。支持组合查询，字段之间用,分隔
+	fullText := []string{}          //考据级全文搜索索引字段的下标。
+	ftlen := "7"                    //全文搜索的长度，中文默认是7
 	r := tbifo.Create(name, ftlen, fields, fieldType, idxs, fullText)
 	fmt.Printf("r: %v\n", r)
 }
