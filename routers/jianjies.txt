@@ -1,0 +1,53 @@
+package routers
+
+import (
+	"jianjie/pubgo"
+	"net/http"
+)
+
+var (
+	jianjiesmethod map[string]func(w http.ResponseWriter, req *http.Request) //查询添加修改删除操作处理。
+
+)
+
+func Jianjies(w http.ResponseWriter, req *http.Request) {
+
+	w.Header().Set("Access-Control-Allow-Origin", "*") //同源策略，不加客户端调用不了。
+	w.Header().Set("Content-Type", "application/json")
+
+	pubgo.Tj.Brows("/jianjies/" + req.Method)
+
+	//req.jianjiesmethod
+	if jianjiesmethod == nil {
+		jianjiesmethod = make(map[string]func(w http.ResponseWriter, req *http.Request), 4)
+		jianjiesmethod["POST"] = jianjiespost     //添加
+		jianjiesmethod["GET"] = jianjiesget       //查询
+		jianjiesmethod["DELETE"] = jianjiesdelete //删除
+		jianjiesmethod["PUT"] = jianjiesput       //jianjiesput       //修改
+	}
+	if f, ok := jianjiesmethod[req.Method]; ok {
+		f(w, req)
+	}
+}
+func jianjiespost(w http.ResponseWriter, req *http.Request) {
+	mu.Lock()
+	defer mu.Unlock()
+	params := postparas(req)
+	Table["jianjie"].Ins(params)
+
+}
+func jianjiesget(w http.ResponseWriter, req *http.Request) {
+
+}
+func jianjiesdelete(w http.ResponseWriter, req *http.Request) {
+	mu.Lock()
+	defer mu.Unlock()
+	params := postparas(req)
+	Table["jianjie"].Del(params["id"])
+}
+func jianjiesput(w http.ResponseWriter, req *http.Request) {
+	mu.Lock()
+	defer mu.Unlock()
+	params := postparas(req)
+	Table["jianjie"].Upd(params)
+}

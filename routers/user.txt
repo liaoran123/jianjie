@@ -1,0 +1,60 @@
+package routers
+
+import (
+	"jianjie/pubgo"
+	"jianjie/xbdb"
+	"net/http"
+)
+
+var (
+	usermethod map[string]func(w http.ResponseWriter, req *http.Request) //查询添加修改删除操作处理。
+
+)
+
+func User(w http.ResponseWriter, req *http.Request) {
+
+	w.Header().Set("Access-Control-Allow-Origin", "*") //同源策略，不加客户端调用不了。
+	w.Header().Set("Content-Type", "application/json")
+
+	pubgo.Tj.Brows("/user/" + req.Method)
+
+	//req.usermethod
+	if usermethod == nil {
+		usermethod = make(map[string]func(w http.ResponseWriter, req *http.Request), 4)
+		usermethod["POST"] = userpost     //添加
+		usermethod["GET"] = userget       //查询
+		usermethod["DELETE"] = userdelete //删除
+		usermethod["PUT"] = userput       //userput       //修改
+	}
+	if f, ok := usermethod[req.Method]; ok {
+		f(w, req)
+	}
+}
+func userpost(w http.ResponseWriter, req *http.Request) {
+	mu.Lock()
+	defer mu.Unlock()
+	params := postparas(req)
+	Table["user"].Ins(params)
+
+}
+func userget(w http.ResponseWriter, req *http.Request) {
+	params := getparas(req)
+	key := Table["user"].Ifo.FieldChByte("id", params["id"])
+	tbd := Table["user"].Select.OneRecord(key)
+	json := Table["user"].DataToJson(tbd)
+	w.Write(json.Bytes())
+	json.Reset()
+	xbdb.Bufpool.Put(json)
+}
+func userdelete(w http.ResponseWriter, req *http.Request) {
+	mu.Lock()
+	defer mu.Unlock()
+	params := postparas(req)
+	Table["user"].Del(params["id"])
+}
+func userput(w http.ResponseWriter, req *http.Request) {
+	mu.Lock()
+	defer mu.Unlock()
+	params := postparas(req)
+	Table["user"].Upd(params)
+}
