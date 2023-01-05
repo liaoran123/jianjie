@@ -180,7 +180,7 @@ func (t *Table) DataToJson(tbd *TbData) (r *bytes.Buffer) {
 		[{"id":2,"title":"金刚经","fid":1,"isleaf":"0"},
 		{"id":3,"title":"六祖坛经","fid":1,"isleaf":"0"}]
 	*/
-	r.WriteString("[")
+	r.WriteString("{\"result\":[")
 	for j, v := range tbd.Rd {
 		if v == nil {
 			continue
@@ -213,7 +213,7 @@ func (t *Table) DataToJson(tbd *TbData) (r *bytes.Buffer) {
 			r.WriteString(",")
 		}
 	}
-	r.WriteString("]")
+	r.WriteString("]}")
 	tbd.Release()
 	return
 }

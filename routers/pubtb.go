@@ -56,7 +56,9 @@ func pubtbposts(w http.ResponseWriter, req *http.Request) {
 	if !store.Verify(params["capid"], params["code"], true) {
 		r.Info = "验证码不正确！"
 		json.NewEncoder(w).Encode(r)
-		return
+		if params["tbname"] != "d" && req.Method == "POST" { //例外。点赞表添加不需要验证码。
+			return
+		}
 	}
 	r = posts[req.Method](params)
 	json.NewEncoder(w).Encode(r)

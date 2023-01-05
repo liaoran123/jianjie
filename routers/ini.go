@@ -21,20 +21,20 @@ func Ini() {
 	//建表
 	Xb = xb
 	dbinfo := xbdb.NewTableInfo(Xb)
-	if dbinfo.GetInfo("user").FieldType == nil {
+	if dbinfo.GetInfo("u").FieldType == nil {
 		createuser(dbinfo)
 	}
-	if dbinfo.GetInfo("jianjie").FieldType == nil {
+	if dbinfo.GetInfo("j").FieldType == nil {
 		createjianjie(dbinfo)
 	}
-	if dbinfo.GetInfo("dzan").FieldType == nil {
+	if dbinfo.GetInfo("d").FieldType == nil {
 		createdzan(dbinfo)
 	}
 	//打开表操作结构
 	Table = make(map[string]*xbdb.Table)
-	Table["user"] = xbdb.NewTable(Xb, "user")
-	Table["jianjie"] = xbdb.NewTable(Xb, "jianjie")
-	Table["dzan"] = xbdb.NewTable(Xb, "dzan")
+	Table["u"] = xbdb.NewTable(Xb, "u")
+	Table["j"] = xbdb.NewTable(Xb, "j")
+	Table["d"] = xbdb.NewTable(Xb, "d")
 	//目录入加载内存
 
 	//Table["jianjie"].Select.For(Pr)
