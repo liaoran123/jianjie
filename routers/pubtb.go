@@ -52,13 +52,14 @@ func pubtbposts(w http.ResponseWriter, req *http.Request) {
 	defer mu.Unlock()
 	var r xbdb.ReInfo
 	params := postparas(req)
-
-	if !store.Verify(params["capid"], params["code"], true) {
-		r.Info = "验证码不正确！"
+	if len(params) == 0 {
+		params = getparas(req)
+	}
+	psw := ConfigMap["psw"].(string)
+	if psw == "" || psw != params["psw"] {
+		r.Info = "密码不正确！"
 		json.NewEncoder(w).Encode(r)
-		if params["tbname"] != "d" && req.Method == "POST" { //例外。点赞表添加不需要验证码。
-			return
-		}
+		return
 	}
 	r = posts[req.Method](params)
 	json.NewEncoder(w).Encode(r)
@@ -75,51 +76,3 @@ func PPUT(params map[string]string) (r xbdb.ReInfo) {
 	r = Table[params["tbname"]].Upd(params)
 	return
 }
-
-/*
-func pubtbpost(w http.ResponseWriter, req *http.Request) {
-	mu.Lock()
-	defer mu.Unlock()
-	var r xbdb.ReInfo
-	params := postparas(req)
-	if !store.Verify(params["capid"], params["code"], true) {
-		r.Info = "验证码不正确！"
-		json.NewEncoder(w).Encode(r)
-		return
-	}
-	r = Table[params["tbname"]].Ins(params)
-	json.NewEncoder(w).Encode(r)
-}
-
-func pubtbdelete(w http.ResponseWriter, req *http.Request) {
-	mu.Lock()
-	defer mu.Unlock()
-	var r xbdb.ReInfo
-	params := postparas(req)
-	if !store.Verify(params["capid"], params["code"], true) {
-		r.Info = "验证码不正确！"
-		json.NewEncoder(w).Encode(r)
-		return
-	}
-	r = Table[params["tbname"]].Del(params["id"])
-	json.NewEncoder(w).Encode(r)
-}
-func pubtbput(w http.ResponseWriter, req *http.Request) {
-	mu.Lock()
-	defer mu.Unlock()
-	var r xbdb.ReInfo
-	params := postparas(req)
-	if !VerifyTime(params["md5code"], params["capid"]) {
-		r.Info = "错误，请重试"
-		json.NewEncoder(w).Encode(r)
-		return
-	}
-	if !store.Verify(params["capid"], params["code"], true) {
-		r.Info = "验证码不正确！"
-		json.NewEncoder(w).Encode(r)
-		return
-	}
-	r = Table[params["tbname"]].Upd(params)
-	json.NewEncoder(w).Encode(r)
-}
-*/

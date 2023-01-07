@@ -239,7 +239,7 @@ func (s *Select) GetIdxPrefixKey(idxfield, idxvalue, pkvalue []byte) (r []byte) 
 func (s *Select) OneRecord(PKvalue []byte) (r *TbData) { //GetOneRecord
 	key := s.GetPkKey(PKvalue)
 	value := s.GetValue(key)
-	if value == nil {
+	if len(value) == 0 {
 		return
 	}
 	r = TbDatapool.Get().(*TbData)

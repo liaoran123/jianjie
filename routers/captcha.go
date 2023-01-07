@@ -22,6 +22,8 @@ func NewDriver() *captcha.DriverString {
 
 // 生成图形验证码
 func GenerateCaptchaHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*") //同源策略，不加客户端调用不了。
+	//w.Header().Set("Content-Type", "application/json")
 	var driver = NewDriver().ConvertFonts()
 	c := captcha.NewCaptcha(driver, store)
 	_, content, answer := c.Driver.GenerateIdQuestionAnswer()

@@ -75,6 +75,9 @@ func FjJianjieget(w http.ResponseWriter, req *http.Request) {
 	params := getparas(req)
 	key := Table["j"].Ifo.FieldChByte("id", params["id"])
 	tbd := Table["j"].Select.OneRecord(key)
+	if tbd == nil {
+		return
+	}
 	json := Table["j"].DataToJson(tbd)
 	w.Write(json.Bytes())
 	json.Reset()
