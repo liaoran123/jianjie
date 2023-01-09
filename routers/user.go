@@ -38,6 +38,11 @@ func userpost(w http.ResponseWriter, req *http.Request) {
 	defer mu.Unlock()
 	var r xbdb.ReInfo
 	params := postparas(req)
+	if params["capid"] == "" || params["code"] == "" {
+		r.Info = "验证码不正确！"
+		json.NewEncoder(w).Encode(r)
+		return
+	}
 	if !store.Verify(params["capid"], params["code"], true) {
 		r.Info = "验证码不正确！"
 		json.NewEncoder(w).Encode(r)
@@ -56,7 +61,12 @@ func userpost(w http.ResponseWriter, req *http.Request) {
 }
 func userget(w http.ResponseWriter, req *http.Request) {
 	var r xbdb.ReInfo
-	params := getparas(req) //  postparas(req)
+	params := getparas(req)                            //  postparas(req)
+	if params["capid"] == "" || params["code"] == "" { //这个验证码控件有漏洞
+		r.Info = "验证码不正确！"
+		json.NewEncoder(w).Encode(r)
+		return
+	}
 	if !store.Verify(params["capid"], params["code"], true) {
 		r.Info = "验证码不正确！"
 		json.NewEncoder(w).Encode(r)

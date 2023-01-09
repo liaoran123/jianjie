@@ -4,7 +4,6 @@ package xbdb
 
 import (
 	"bytes"
-	"fmt"
 	"sync"
 
 	"github.com/syndtr/goleveldb/leveldb/iterator"
@@ -79,12 +78,12 @@ func (i *Iters) ForDataFun(f func(rd []byte) bool) {
 		}
 	}
 	i.iter.Release()
-	fmt.Println("跟踪执行次数:", loop) //跟踪执行次数
+	//fmt.Println("跟踪执行次数:", loop) //跟踪执行次数
 }
 
 //将key、value组合一个完整的记录
 func KVToRd(k, v []byte) (r []byte) {
-	ks := bytes.Split(k, []byte(Split))
+	ks := SplitRd(k) //bytes.Split(k, []byte(Split))
 	////将key去除第一个前缀，剩下的就是数据，有以下2中情况
 	//索引：k=ca,fid-3-7 v=    得到:3-7-  (后面是空值)
 	//主键: k=ca-1 v=ddd-ccdd-fff 得到:1-ddd-ccdd-fff

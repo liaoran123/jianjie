@@ -42,6 +42,11 @@ func FjJianjiepost(w http.ResponseWriter, req *http.Request) {
 
 	var r xbdb.ReInfo
 	params := postparas(req)
+	if params["capid"] == "" || params["code"] == "" {
+		r.Info = "验证码不正确！"
+		json.NewEncoder(w).Encode(r)
+		return
+	}
 	if !store.Verify(params["capid"], params["code"], true) {
 		r.Info = "验证码不正确！"
 		json.NewEncoder(w).Encode(r)
@@ -107,6 +112,7 @@ func FjJianjiedelete(w http.ResponseWriter, req *http.Request, params map[string
 	key := Table["j"].Ifo.FieldChByte("id", params["id"])
 	tbd := Table["j"].Select.OneRecord(key)
 	tbm := Table["j"].RDtoMap(tbd.Rd[0])
+	tbd.Release()
 	tbm["sj"] = strings.Split(tbm["sj"], " ")[0] // + " 00:00:00"
 	sj, _ := time.ParseInLocation("2006-01-02", tbm["sj"], time.Local)
 	//fmt.Println(time.Since(sj).Hours())

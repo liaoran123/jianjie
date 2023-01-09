@@ -37,7 +37,7 @@ func Ini() {
 	Table["d"] = xbdb.NewTable(Xb, "d")
 	//目录入加载内存
 
-	//Table["jianjie"].Select.For(Pr)
+	//Table["j"].Select.ForDb(Pr)
 }
 
 func Pr(rd []byte) bool {

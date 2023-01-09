@@ -94,6 +94,17 @@ func (s *Select) IterRandMove(bkey, ekey []byte, asc bool) (iter iterator.Iterat
 /*
 遍历数据库
 */
+func (s *Select) ForDbase(f func(k, v []byte) bool) {
+	iter := s.Nil()
+	for iter.Next() {
+		if f(iter.Key(), iter.Value()) {
+		} else {
+			iter.Release()
+			return
+		}
+	}
+	iter.Release()
+}
 func (s *Select) ForDb(f func(rd []byte) bool) {
 	iter := s.Nil()
 	for iter.Next() {

@@ -61,15 +61,12 @@ func (t *Table) Act(vals [][]byte, Act string) (r ReInfo) {
 			"delete": t.del,
 		}
 	}
+	/* 没有的字段即是空值0值，故而不需要判断
 	if len(vals) < len(t.Ifo.Fields) {
 		r.Info = "字段参数长短不匹配！"
 		return
 	}
-	/*
-		//转义
-		for i := 0; i < len(vals); i++ {
-			vals[i] = t.Ifo.SplitToCh(vals[i])
-		}*/
+	*/
 	r = t.ActPK(vals, Act)
 	if !r.Succ {
 		return
@@ -156,11 +153,28 @@ func (t *Table) StrToByte(params map[string]string) (r [][]byte) {
 //将记录转换为map
 func (t *Table) RDtoMap(Rd []byte) (r map[string]string) {
 	r = make(map[string]string, len(t.Ifo.Fields))
-	vs := bytes.Split(Rd, []byte(Split))
+	vs := t.Split(Rd)
 	for i, v := range vs {
-		r[t.Ifo.Fields[i]] = t.Ifo.ByteChString(t.Ifo.FieldType[i], v)
+		r[t.Ifo.Fields[i]] = t.Ifo.ByteChString(t.Ifo.FieldType[i], v) //将包括分隔符的转义数据恢复
 	}
 	return
+}
+
+//将记录分开并转义数据恢复
+func (t *Table) Split(Rd []byte) (r [][]byte) {
+	r = SplitRd(Rd)
+	return
+	/*
+		csp := "[fgf0]"
+		csp1 := "[fgf1]"
+		rds := bytes.Replace(Rd, []byte(ChSplit), []byte(csp), -1)
+		rds = bytes.Replace(rds, []byte(ChIdxSplit), []byte(csp1), -1)
+		r = bytes.Split(rds, []byte(Split))
+		for i, v := range r {
+			r[i] = bytes.Replace(v, []byte(csp), []byte(ChSplit), -1)      //ChToSplit(v)
+			r[i] = bytes.Replace(r[i], []byte(csp1), []byte(IdxSplit), -1) //ChToSplit(v)
+		}*/
+
 }
 
 var Bufpool = sync.Pool{
@@ -170,6 +184,11 @@ var Bufpool = sync.Pool{
 }
 
 func (t *Table) DataToJson(tbd *TbData) (r *bytes.Buffer) {
+	r = t.DataToJsonforIfo(tbd, &t.Ifo)
+	return
+}
+
+func (t *Table) DataToJsonforIfo(tbd *TbData, Ifo *TableInfo) (r *bytes.Buffer) {
 	if tbd == nil {
 		return
 	}
@@ -186,16 +205,16 @@ func (t *Table) DataToJson(tbd *TbData) (r *bytes.Buffer) {
 			continue
 		}
 		r.WriteString("{")
-		value = bytes.Split(v, []byte(Split))
-		for i, fv := range t.Ifo.FieldType {
+		value = t.Split(v) //bytes.Split(v, []byte(Split))
+		for i, fv := range Ifo.FieldType {
 			switch fv {
 			case "string":
-				jsonstr = "\"" + t.Ifo.Fields[i] + "\":" + strconv.Quote(string(value[i])) //strconv.Quote自动加字符串号
+				jsonstr = "\"" + Ifo.Fields[i] + "\":" + strconv.Quote(string(value[i])) //strconv.Quote自动加字符串号
 			default:
-				iv := t.Ifo.ByteChString(t.Ifo.FieldType[i], value[i])
-				jsonstr = "\"" + t.Ifo.Fields[i] + "\":" + iv
+				iv := Ifo.ByteChString(Ifo.FieldType[i], value[i])
+				jsonstr = "\"" + Ifo.Fields[i] + "\":" + iv
 			}
-			if i != len(t.Ifo.FieldType)-1 {
+			if i != len(Ifo.FieldType)-1 {
 				jsonstr += ","
 			}
 			jsonstr = strings.Replace(jsonstr, "\n", "\\n", -1) //json转义
@@ -215,5 +234,36 @@ func (t *Table) DataToJson(tbd *TbData) (r *bytes.Buffer) {
 	}
 	r.WriteString("]}")
 	tbd.Release()
+	return
+}
+
+//根据主键获取表的一条记录（获取一个key的values）
+func (t *Table) Record(PKvalue string) (r *TbData) { //GetOneRecord
+	key := t.Ifo.FieldChByte(t.Ifo.Fields[0], PKvalue)
+	r = t.Select.OneRecord(key)
+	return
+}
+
+//根据主键获取表的一条记录（获取一个key的values）
+func (t *Table) Records(PKids []string) (r *TbData) {
+	var key, value []byte
+	r = TbDatapool.Get().(*TbData)
+	for _, v := range PKids {
+		key = t.Ifo.FieldChByte(t.Ifo.Fields[0], v)
+		value = t.Select.GetValue(key)
+		if len(value) == 0 {
+			continue
+		}
+		r.Rd = append(r.Rd, KVToRd(key, value))
+	}
+	return
+}
+
+//根据主键区间获取表的区间记录
+func (t *Table) RecordRand(bpk, epk string) (r *TbData) {
+	pfx := []byte(t.Name + Split)
+	bid := t.Ifo.FieldChByte(t.Ifo.Fields[0], bpk)
+	eid := t.Ifo.FieldChByte(t.Ifo.Fields[0], epk)
+	r = t.Select.FindRand(JoinBytes(pfx, bid), JoinBytes(pfx, eid), true, 0, -1)
 	return
 }
