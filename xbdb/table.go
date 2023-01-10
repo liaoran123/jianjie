@@ -4,6 +4,7 @@ package xbdb
 
 import (
 	"bytes"
+	"fmt"
 	"strconv"
 	"strings"
 	"sync"
@@ -206,6 +207,10 @@ func (t *Table) DataToJsonforIfo(tbd *TbData, Ifo *TableInfo) (r *bytes.Buffer) 
 		}
 		r.WriteString("{")
 		value = t.Split(v) //bytes.Split(v, []byte(Split))
+		if len(value) < len(Ifo.FieldType) {
+			fmt.Println("数据分解错误：", string(v), Ifo.FieldType)
+			continue
+		}
 		for i, fv := range Ifo.FieldType {
 			switch fv {
 			case "string":

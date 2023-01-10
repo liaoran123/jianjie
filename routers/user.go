@@ -6,7 +6,6 @@ import (
 	"jianjie/xbdb"
 	"net/http"
 	"strconv"
-	"strings"
 )
 
 var (
@@ -48,7 +47,8 @@ func userpost(w http.ResponseWriter, req *http.Request) {
 		json.NewEncoder(w).Encode(r)
 		return
 	}
-	key := Table["u"].Select.GetIdxPrefix([]byte("email"), []byte(params["email"]))
+	bemali := Table["u"].Ifo.TypeChByte("email", params["email"])
+	key := Table["u"].Select.GetIdxPrefix([]byte("email"), bemali)
 	_, ok := Table["u"].Select.IterPrefixMove(key, true)
 	if ok {
 		r.Info = "邮箱已存在。"
@@ -73,18 +73,21 @@ func userget(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	params["psw"] = Md5(params["psw"])
-	tbd := Table["u"].Select.WhereIdx([]byte("email"), []byte(params["email"]), true, 0, -1)
+	bemali := Table["u"].Ifo.TypeChByte("email", params["email"])
+	tbd := Table["u"].Select.WhereIdx([]byte("email"), bemali, true, 0, -1)
 	if tbd == nil {
 		r.Info = "密码不正确！"
 		json.NewEncoder(w).Encode(r)
 		return
 	}
-	rd := strings.Split(string(tbd.Rd[0]), xbdb.Split)
-	psw := rd[2]
-	id := xbdb.BytesToInt([]byte(rd[0]))
+	rd := Table["u"].Split(tbd.Rd[0])
+	//rd := strings.Split(string(tbd.Rd[0]), xbdb.Split)
+
+	psw := string(rd[2])
+	id := xbdb.BytesToInt(rd[0])
 	sid := strconv.Itoa(id)
 	if psw == params["psw"] {
-		r.Info = "id:" + sid + ",法号:" + rd[3] + "\n登陆成功!"
+		r.Info = "id:" + sid + ",法号:" + string(rd[3]) + "\n登陆成功!"
 		r.Succ = true
 	} else {
 		r.Info = "密码不对!"
