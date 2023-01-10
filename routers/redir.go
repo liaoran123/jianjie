@@ -1,8 +1,6 @@
 package routers
 
 import (
-	"bytes"
-	"fmt"
 	"net/http"
 )
 
@@ -11,6 +9,8 @@ func Redir(w http.ResponseWriter, req *http.Request) {
 	//http.Redirect(w, req, "/wenhuashuo/", http.StatusFound)
 	http.Redirect(w, req, "/", http.StatusFound)
 }
+
+/*
 func Updb(w http.ResponseWriter, req *http.Request) {
 	Table["j"].Select.ForDbase(updbfun)
 }
@@ -33,3 +33,4 @@ func updbfun(k, v []byte) bool {
 	}
 	return true
 }
+*/

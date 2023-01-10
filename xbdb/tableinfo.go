@@ -136,6 +136,7 @@ func (t *TableInfo) TypeChByte(fieldType, Fieldvalue string) (r []byte) {
 	default:
 		r = []byte(Fieldvalue)
 	}
+	r = SplitToCh([]byte(r)) //转义
 	return
 }
 
@@ -226,8 +227,8 @@ func SplitRd(Rd []byte) (r [][]byte) {
 	rds = bytes.Replace(rds, []byte(ChIdxSplit), []byte(csp1), -1)
 	r = bytes.Split(rds, []byte(Split))
 	for i, v := range r {
-		r[i] = bytes.Replace(v, []byte(csp), []byte(Split), -1)        //ChToSplit(v)
-		r[i] = bytes.Replace(r[i], []byte(csp1), []byte(IdxSplit), -1) //ChToSplit(v)
+		r[i] = bytes.Replace(v, []byte(csp), []byte(Split), -1)
+		r[i] = bytes.Replace(r[i], []byte(csp1), []byte(IdxSplit), -1)
 	}
 	return
 }
