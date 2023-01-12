@@ -29,8 +29,11 @@ func main() {
 
 	http.HandleFunc("/Captcha/", routers.GenerateCaptchaHandler)
 	http.HandleFunc("/redir/", routers.Redir)
-	http.HandleFunc("/updb/", routers.Updb)
+	//http.HandleFunc("/updb/", routers.Updb)
 	http.HandleFunc("/test/", routers.Test)
+
+	http.HandleFunc("/dbback/", routers.Dbback)
+
 	fmt.Println("佛经见解1.0版本")
 	err := http.ListenAndServe(":"+port, nil)
 	if err != nil {
