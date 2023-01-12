@@ -35,7 +35,7 @@ func Pubtb(w http.ResponseWriter, req *http.Request) {
 func pubtbget(w http.ResponseWriter, req *http.Request) {
 	params := getparas(req)
 	key := Table[params["tbname"]].Ifo.FieldChByte("id", params["id"])
-	tbd := Table[params["tbname"]].Select.OneRecord(key)
+	tbd := Table[params["tbname"]].Select.Record(key)
 	json := Table[params["tbname"]].DataToJson(tbd)
 	w.Write(json.Bytes())
 	json.Reset()

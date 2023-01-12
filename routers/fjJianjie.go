@@ -88,7 +88,7 @@ func FjJianjiepost(w http.ResponseWriter, req *http.Request) {
 func FjJianjieget(w http.ResponseWriter, req *http.Request) {
 	params := getparas(req)
 	key := Table["j"].Ifo.FieldChByte("id", params["id"])
-	tbd := Table["j"].Select.OneRecord(key)
+	tbd := Table["j"].Select.Record(key)
 	if tbd == nil {
 		return
 	}
@@ -110,7 +110,7 @@ func FjJianjiedelete(w http.ResponseWriter, req *http.Request, params map[string
 		}*/
 	//打开要删除的记录，获取时间，超过3天不能删除
 	key := Table["j"].Ifo.FieldChByte("id", params["id"])
-	tbd := Table["j"].Select.OneRecord(key)
+	tbd := Table["j"].Select.Record(key)
 	tbm := Table["j"].RDtoMap(tbd.Rd[0])
 	tbd.Release()
 	tbm["sj"] = strings.Split(tbm["sj"], " ")[0] // + " 00:00:00"
