@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/util"
@@ -162,7 +163,11 @@ func (t *TableInfo) FieldTypeChByte(fieldType, Fieldvalue string, ChSplit bool) 
 	case "float":
 		fv, _ := strconv.ParseFloat(Fieldvalue, 64) //只能转Float64
 		r = Float64ToByte(fv)
-
+	case "time":
+		if Fieldvalue == "" { //time类型空值，则表示获取服务器当时时间
+			Fieldvalue = time.Now().String() //strings.Split(time.Now().String(), ".")[0]
+		}
+		r = []byte(Fieldvalue)
 	default:
 		r = []byte(Fieldvalue)
 	}

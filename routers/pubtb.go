@@ -55,9 +55,13 @@ func pubtbposts(w http.ResponseWriter, req *http.Request) {
 	if len(params) == 0 {
 		params = getparas(req)
 	}
-	psw := ConfigMap["psw"].(string)
-	if psw == "" || psw != params["psw"] {
-		r.Info = "密码不正确！"
+	if params["capid"] == "" || params["code"] == "" {
+		r.Info = "验证码不正确！"
+		json.NewEncoder(w).Encode(r)
+		return
+	}
+	if !store.Verify(params["capid"], params["code"], true) {
+		r.Info = "验证码不正确！"
 		json.NewEncoder(w).Encode(r)
 		return
 	}

@@ -20,7 +20,7 @@ func main() {
 
 	pubgo.Tj = pubgo.Newtongji()
 
-	http.HandleFunc("/static/", routers.Static) //静态文件服务器
+	//http.HandleFunc("/static/", routers.Static) //静态文件服务器
 	http.HandleFunc("/pubtb/", routers.Pubtb)
 	http.HandleFunc("/pubget/", routers.Pubget)
 	http.HandleFunc("/pubgettb/", routers.Pubgettb)
@@ -29,7 +29,7 @@ func main() {
 
 	http.HandleFunc("/Captcha/", routers.GenerateCaptchaHandler)
 	http.HandleFunc("/redir/", routers.Redir)
-	//http.HandleFunc("/updb/", routers.Updb)
+	http.HandleFunc("/updb/", routers.Updb)
 	http.HandleFunc("/test/", routers.Test)
 
 	http.HandleFunc("/dbback/", routers.Dbback)

@@ -80,7 +80,7 @@ func FjJianjiepost(w http.ResponseWriter, req *http.Request) {
 		json.NewEncoder(w).Encode(r)
 		return
 	}
-	params["sj"] = strings.Split(time.Now().String(), ".")[0]
+	//params["sj"] = strings.Split(time.Now().String(), ".")[0]
 	r = Table["j"].Ins(params)
 	json.NewEncoder(w).Encode(r)
 
