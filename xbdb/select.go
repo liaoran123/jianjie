@@ -248,6 +248,26 @@ func (s *Select) GetIdxPrefixKey(idxfield, idxvalue, pkvalue []byte) (r []byte) 
 	return
 }
 
+//一条组合索引key
+func (s *Select) GetIdxsPrefixKey(pkvalue []byte, idxfields, idxvalues [][]byte) (r []byte) {
+	bSplit := []byte(Split)
+	flen, ilen := len(idxfields), len(idxvalues)
+	if flen != ilen {
+		return
+	}
+	var idxfield, idxvalue []byte
+	for i := 0; i < ilen; i++ {
+		idxfield = idxfields[i] //JoinBytes(idxfields[i])
+		idxvalue = idxvalues[i] //JoinBytes(idxvalues[i])
+		if i != ilen-1 {
+			idxfield = JoinBytes(idxfield, []byte(IdxSplit))
+			idxvalue = JoinBytes(idxvalue, []byte(IdxSplit))
+		}
+	}
+	r = JoinBytes([]byte(s.Tbname), []byte(IdxSplit), idxfield, bSplit, idxvalue, bSplit, pkvalue)
+	return
+}
+
 /*
 //根据主键获取表的一条记录（获取一个key的values）
 func (s *Select) OneRecord(PKvalue []byte) (r *TbData) { //GetOneRecord
@@ -305,26 +325,6 @@ func (s *Select) GetIdxPrefixLike(idxfield, idxvalue []byte) (r []byte) {
 		bSplit := []byte(Split)
 		r = JoinBytes([]byte(s.Tbname), []byte(IdxSplit), idxfield, bSplit, idxvalue)
 	*/
-	return
-}
-
-//一条组合索引key
-func (s *Select) GetIdxsPrefixKey(pkvalue []byte, idxfields, idxvalues [][]byte) (r []byte) {
-	bSplit := []byte(Split)
-	flen, ilen := len(idxfields), len(idxvalues)
-	if flen != ilen {
-		return
-	}
-	var idxfield, idxvalue []byte
-	for i := 0; i < ilen; i++ {
-		idxfield = JoinBytes(idxfields[i])
-		idxvalue = JoinBytes(idxvalues[i])
-		if i != ilen-1 {
-			idxfield = JoinBytes(idxfield, []byte(IdxSplit))
-			idxvalue = JoinBytes(idxvalue, []byte(IdxSplit))
-		}
-	}
-	r = JoinBytes([]byte(s.Tbname), []byte(IdxSplit), idxfield, bSplit, idxvalue, bSplit, pkvalue)
 	return
 }
 
