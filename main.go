@@ -24,8 +24,10 @@ func main() {
 	http.HandleFunc("/pubtb/", routers.Pubtb)
 	http.HandleFunc("/pubget/", routers.Pubget)
 	http.HandleFunc("/pubgettb/", routers.Pubgettb)
+
 	http.HandleFunc("/user/", routers.User)
 	http.HandleFunc("/jianjie/", routers.FjJianjie)
+	http.HandleFunc("/qzuser/", routers.Qzuser)
 
 	http.HandleFunc("/Captcha/", routers.GenerateCaptchaHandler)
 	http.HandleFunc("/redir/", routers.Redir)

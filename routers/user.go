@@ -81,7 +81,6 @@ func userget(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	rd := Table["u"].Split(tbd.Rd[0])
-	//rd := strings.Split(string(tbd.Rd[0]), xbdb.Split)
 
 	psw := string(rd[2])
 	id := xbdb.BytesToInt(rd[0])

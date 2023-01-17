@@ -45,13 +45,15 @@ func Ini() {
 	Table["hf"] = xbdb.NewTable(Xb, "hf")
 	Table["gbhf"] = xbdb.NewTable(Xb, "gbhf")
 	Table["sc"] = xbdb.NewTable(Xb, "sc")
-	Table["test"] = xbdb.NewTable(Xb, "test")
 
 	//测试代码
-	params := map[string]string{"userid": "58", "wid": "59"}
-	Table["test"].Ins(params)
+	//Table["test"] = xbdb.NewTable(Xb, "test")
+
+	//params := map[string]string{"userid": "58", "wid": "59"}
+	//Table["test"].Ins(params)
 	//打印数据库//用于测试代码
 	Table["j"].Select.ForDbase(Pr)
+
 }
 
 func Pr(k, v []byte) bool {
@@ -93,37 +95,38 @@ func createtbs(dbinfo *xbdb.TableInfo) {
 
 	}
 	if dbinfo.GetInfo("qz").FieldType == nil { //创建群组表
-		name := "qz"                                                    //目录表
-		fields := []string{"id", "mc", "userid", "jianjie", "sj"}       //字段，编码，名称，用户id，简介，创建时间。
-		fieldType := []string{"int", "string", "int", "string", "time"} //字段类型
-		idxs := []string{"2"}                                           //索引字段,fields的下标对应的字段。支持组合查询，字段之间用,分隔
-		fullText := []string{"1"}                                       //考据级全文搜索索引字段的下标。
-		ftlen := "7"                                                    //全文搜索的长度，中文默认是7
+		name := "qz"                                                              //目录表
+		fields := []string{"id", "mc", "userid", "fahao", "jianjie", "sj"}        //字段，编码，名称，用户id，简介，创建时间。
+		fieldType := []string{"int", "string", "int", "string", "string", "time"} //字段类型
+		idxs := []string{"1", "2"}                                                //索引字段,fields的下标对应的字段。支持组合查询，字段之间用,分隔
+		fullText := []string{"1"}                                                 //考据级全文搜索索引字段的下标。
+		ftlen := "7"                                                              //全文搜索的长度，中文默认是7
 		r := dbinfo.Create(name, ftlen, fields, fieldType, idxs, fullText)
 		fmt.Printf("r: %v\n", r)
 
 	}
 	if dbinfo.GetInfo("wz").FieldType == nil { //创建文章表
-		name := "wz"                                                      //目录表
-		fields := []string{"id", "type", "userid", "title", "cont", "sj"} //字段，编码，type,类型，用户编码，标题，内容，创建时间。
+		name := "wz"                                                                           //目录表
+		fields := []string{"id", "type", "typename", "userid", "fahao", "title", "cont", "sj"} //字段，编码，type,类型，类型名称,用户编码，标题，内容，创建时间。
 		//type,类型。当为群组时，即是群组编码；当是见解时，即是见解secid。type是string，兼容int或字符串的id。
 		//当是新闻资讯时，type="xw"等等。除见解外特殊外，所有文章都用这个表，以type区分。
-		fieldType := []string{"int", "string", "int", "string", "string", "time"} //字段类型
-		idxs := []string{"1", "2"}                                                //索引字段,fields的下标对应的字段。支持组合查询，字段之间用,分隔。仅提供title搜索。
-		fullText := []string{"3"}                                                 //考据级全文搜索索引字段的下标。
-		ftlen := "7"                                                              //全文搜索的长度，中文默认是7
+		//加入类型名称，是为了空间换时间。
+		fieldType := []string{"int", "string", "string", "int", "string", "string", "string", "time"} //字段类型
+		idxs := []string{"1", "3"}                                                                    //索引字段,fields的下标对应的字段。支持组合查询，字段之间用,分隔。仅提供title搜索。
+		fullText := []string{"4"}                                                                     //考据级全文搜索索引字段的下标。
+		ftlen := "7"                                                                                  //全文搜索的长度，中文默认是7
 		r := dbinfo.Create(name, ftlen, fields, fieldType, idxs, fullText)
 		fmt.Printf("r: %v\n", r)
 
 	}
 	if dbinfo.GetInfo("hf").FieldType == nil { //创建回复表，包括见解、和群组文章或其他
-		name := "hf"                                                     //目录表
-		fields := []string{"id", "wid", "userid", "title", "cont", "sj"} //字段，编码，文章编码（1,见解；2，群组文章），所属（1,见解；2，群组文章），标题，内容，创建时间。
+		name := "hf"                                                               //目录表
+		fields := []string{"id", "wid", "userid", "fahao", "wtitle", "cont", "sj"} //字段，编码，文章编码,用户编码,文章标题，内容，创建时间。
 		//wid为string，兼容int和string的id
-		fieldType := []string{"int", "string", "int", "string", "string", "time"} //字段类型
-		idxs := []string{"1", "2"}                                                //索引字段,fields的下标对应的字段。支持组合查询，字段之间用,分隔。组合查询，就是为了避开 where ...and...的情况，直接用组合索引代替解决。
-		fullText := []string{}                                                    //考据级全文搜索索引字段的下标。
-		ftlen := "7"                                                              //全文搜索的长度，中文默认是7
+		fieldType := []string{"int", "string", "int", "string", "string", "string", "time"} //字段类型
+		idxs := []string{"1", "2"}                                                          //索引字段,fields的下标对应的字段。支持组合查询，字段之间用,分隔。组合查询，就是为了避开 where ...and...的情况，直接用组合索引代替解决。
+		fullText := []string{}                                                              //考据级全文搜索索引字段的下标。
+		ftlen := "7"                                                                        //全文搜索的长度，中文默认是7
 		r := dbinfo.Create(name, ftlen, fields, fieldType, idxs, fullText)
 		fmt.Printf("r: %v\n", r)
 
