@@ -241,7 +241,6 @@ func (s *Select) GetPKValue(fieldvalue []byte) (r []byte) { //GetRecord
 	return
 }
 
-/*
 //一条索引key
 func (s *Select) GetIdxPrefixKey(idxfield, idxvalue, pkvalue []byte) (r []byte) {
 	bSplit := []byte(Split)
@@ -249,8 +248,18 @@ func (s *Select) GetIdxPrefixKey(idxfield, idxvalue, pkvalue []byte) (r []byte) 
 	return
 }
 
+//一条组合索引key，GetIdxPrefixKey是一个值，GetIdxsPrefixKey是的多个值
+func (s *Select) GetIdxsPrefixKey(idxfield, idxvalue [][]byte, pkvalue []byte) (r []byte) {
+	bIdxSplit := []byte(IdxSplit)                //索引拼接分隔符
+	idxfields := bytes.Join(idxfield, bIdxSplit) //只需将多个值拼接起来即可
+	idxvalues := bytes.Join(idxvalue, bIdxSplit) //只需将多个值拼接起来即可
+	r = s.GetIdxPrefixKey(idxfields, idxvalues, pkvalue)
+	//bSplit := []byte(Split)
+	//r = JoinBytes([]byte(s.Tbname), []byte(IdxSplit), idxfields, bSplit, idxvalues, bSplit, pkvalue)
+	return
+}
 
-*/
+/*
 //一条索引key
 func (s *Select) GetIdxPrefixKey(idxfield, idxvalue, pkvalue []byte) (r []byte) {
 	idxfields := bytes.Split(idxfield, []byte(","))
@@ -258,6 +267,9 @@ func (s *Select) GetIdxPrefixKey(idxfield, idxvalue, pkvalue []byte) (r []byte) 
 	r = s.GetIdxsPrefixKey(pkvalue, idxfields, idxvalues)
 	return
 }
+*/
+
+/*
 
 //一条组合索引key，GetIdxPrefixKey是一个值，GetIdxsPrefixKey是的多个值
 func (s *Select) GetIdxsPrefixKey(pkvalue []byte, idxfields, idxvalues [][]byte) (r []byte) {
@@ -277,17 +289,6 @@ func (s *Select) GetIdxsPrefixKey(pkvalue []byte, idxfields, idxvalues [][]byte)
 		}
 	}
 	r = JoinBytes([]byte(s.Tbname), bIdxSplit, idxfield, bSplit, idxvalue, bSplit, pkvalue)
-	return
-}
-
-/*
-//一条组合索引key，GetIdxPrefixKey是一个值，GetIdxsPrefixKey是的多个值
-func (s *Select) GetIdxsPrefixKey(idxfield, idxvalue [][]byte, pkvalue []byte) (r []byte) {
-	bIdxSplit := []byte(IdxSplit)                //索引拼接分隔符
-	idxfields := bytes.Join(idxfield, bIdxSplit) //只需将多个值拼接起来即可
-	idxvalues := bytes.Join(idxvalue, bIdxSplit) //只需将多个值拼接起来即可
-	bSplit := []byte(Split)
-	r = JoinBytes([]byte(s.Tbname), []byte(IdxSplit), idxfields, bSplit, idxvalues, bSplit, pkvalue)
 	return
 }
 
@@ -322,7 +323,7 @@ func (s *Select) OneRecord(PKvalue []byte) (r *TbData) { //GetOneRecord
 
 //索引前缀，等于索引idxvalue
 func (s *Select) GetIdxPrefix(idxfield, idxvalue []byte) (r []byte) {
-	r = s.GetIdxPrefixKey(idxfield, idxvalue, []byte{})
+	r = s.GetIdxPrefixKey(idxfield, idxvalue, []byte{}) //只需通过GetIdxPrefixKey，提供一个nil的pkvalue即可。
 	/*
 		bSplit := []byte(Split)
 		r = JoinBytes([]byte(s.Tbname), []byte(IdxSplit), idxfield, bSplit, idxvalue, bSplit)

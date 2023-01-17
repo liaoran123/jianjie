@@ -48,7 +48,7 @@ func Ini() {
 	Table["test"] = xbdb.NewTable(Xb, "test")
 
 	//测试代码
-	params := map[string]string{"userid": "8", "wid": "9"}
+	params := map[string]string{"userid": "58", "wid": "59"}
 	Table["test"].Ins(params)
 	//打印数据库//用于测试代码
 	Table["j"].Select.ForDbase(Pr)
