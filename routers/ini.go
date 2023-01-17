@@ -31,6 +31,7 @@ func Ini() {
 	dbinfo.Del("hf")
 	dbinfo.Del("gbhf")
 	dbinfo.Del("sc")
+	dbinfo.Del("test")
 
 	//创建表
 	createtbs(dbinfo)
@@ -44,7 +45,11 @@ func Ini() {
 	Table["hf"] = xbdb.NewTable(Xb, "hf")
 	Table["gbhf"] = xbdb.NewTable(Xb, "gbhf")
 	Table["sc"] = xbdb.NewTable(Xb, "sc")
+	Table["test"] = xbdb.NewTable(Xb, "test")
 
+	//测试代码
+	params := map[string]string{"userid": "8", "wid": "9"}
+	Table["test"].Ins(params)
 	//打印数据库//用于测试代码
 	Table["j"].Select.ForDbase(Pr)
 }
@@ -142,6 +147,16 @@ func createtbs(dbinfo *xbdb.TableInfo) {
 		idxs := []string{"1"}                                           //索引字段,fields的下标对应的字段。支持组合查询，字段之间用,分隔。组合查询，就是为了避开 where ...and...的情况，直接用组合索引代替解决。
 		fullText := []string{}                                          //考据级全文搜索索引字段的下标。
 		ftlen := "7"                                                    //全文搜索的长度，中文默认是7
+		r := dbinfo.Create(name, ftlen, fields, fieldType, idxs, fullText)
+		fmt.Printf("r: %v\n", r)
+	}
+	if dbinfo.GetInfo("test").FieldType == nil { //创建专用测试表
+		name := "test"                                   //收藏表
+		fields := []string{"id", "userid", "wid"}        //字段，编码，用户编码，地址，标题，时间。
+		fieldType := []string{"int", "string", "string"} //字段类型
+		idxs := []string{"1,2"}                          //索引字段,fields的下标对应的字段。支持组合查询，字段之间用,分隔。组合查询，就是为了避开 where ...and...的情况，直接用组合索引代替解决。
+		fullText := []string{}                           //考据级全文搜索索引字段的下标。
+		ftlen := "7"                                     //全文搜索的长度，中文默认是7
 		r := dbinfo.Create(name, ftlen, fields, fieldType, idxs, fullText)
 		fmt.Printf("r: %v\n", r)
 	}
