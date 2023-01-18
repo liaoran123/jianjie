@@ -137,6 +137,16 @@ func (s *Select) ForRD(asc bool, b, count int) (r *TbData) {
 	return
 }
 
+//统计表的记录数
+func (s *Select) Count() (r int) {
+	iter, ok := s.IterPrefixMove([]byte(s.Tbname+Split), true)
+	if !ok {
+		return
+	}
+	r = NewIters(iter, ok, true, 0, -1).ForDataCount()
+	return
+}
+
 /*
 遍历表所有
 */
@@ -165,6 +175,16 @@ func (s *Select) FindPrefixFun(key []byte, asc bool, f func(rd []byte) bool) {
 		return
 	}
 	NewIters(iter, ok, asc, 0, -1).ForDataFun(f)
+}
+
+//前缀遍历,统计记录数
+func (s *Select) FindPrefixCount(key []byte) (r int) {
+	iter, ok := s.IterPrefixMove(key, true)
+	if !ok {
+		return
+	}
+	r = NewIters(iter, ok, true, 0, -1).ForDataCount()
+	return
 }
 
 /*

@@ -43,20 +43,34 @@ func qzpost(w http.ResponseWriter, req *http.Request) {
 	tbname := "qz"
 	//存在id参数，即是删除。（浏览器不支持delete提交。）
 	if id, ok := params["id"]; ok {
-		r = Table[tbname].Del(id)
+		r = delqz(id, params["userid"])
 		json.NewEncoder(w).Encode(r)
 		return
 	}
 
 	buserid := Table[tbname].Ifo.FieldChByte("userid", params["userid"])
-	tdb := Table[tbname].Select.WhereIdx([]byte("userid"), buserid, true, 0, -1)
-	if len(tdb.Rd) < 3 { //最多能建立3个群组
+	key := Table[tbname].Select.GetIdxPrefix([]byte("userid"), buserid)
+	tbcount := Table[tbname].Select.FindPrefixCount(key)
+	if tbcount < 3 { //最多能建立3个群组
 		r = PPOST(params)
 	} else {
 		r.Info = "最多能建立3个群组"
 	}
-	tdb.Release()
 	json.NewEncoder(w).Encode(r)
+}
+
+//删除群组
+func delqz(id, userid string) (r xbdb.ReInfo) {
+	tbname := "qz"
+	field := Table[tbname].Ifo.Fields[0]
+	pkval := Table[tbname].Ifo.FieldChByte(field, id)
+	tbd := Table[tbname].Select.Record(pkval)
+	rdmap := Table[tbname].RDtoMap(tbd.Rd[0])
+	if rdmap["userid"] == userid { //删除的id和用户id对应才能删除，以防数据错乱和攻击。
+		r = Table[tbname].Del(id)
+	}
+	tbd.Release()
+	return
 }
 
 /*

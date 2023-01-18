@@ -42,11 +42,7 @@ func FjJianjiepost(w http.ResponseWriter, req *http.Request) {
 
 	var r xbdb.ReInfo
 	params := postparas(req)
-	if params["capid"] == "" || params["code"] == "" {
-		r.Info = "验证码不正确！"
-		json.NewEncoder(w).Encode(r)
-		return
-	}
+
 	if !store.Verify(params["capid"], params["code"], true) {
 		r.Info = "验证码不正确！"
 		json.NewEncoder(w).Encode(r)
@@ -113,6 +109,10 @@ func FjJianjiedelete(w http.ResponseWriter, req *http.Request, params map[string
 	tbd := Table["j"].Select.Record(key)
 	tbm := Table["j"].RDtoMap(tbd.Rd[0])
 	tbd.Release()
+	if tbm["userid"] != params["userid"] { //删除的id和用户id对应才能删除，以防数据错乱和攻击。
+		return
+	}
+
 	tbm["sj"] = strings.Split(tbm["sj"], " ")[0] // + " 00:00:00"
 	sj, _ := time.ParseInLocation("2006-01-02", tbm["sj"], time.Local)
 	//fmt.Println(time.Since(sj).Hours())
