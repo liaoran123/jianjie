@@ -112,7 +112,6 @@ func FjJianjiedelete(w http.ResponseWriter, req *http.Request, params map[string
 	if tbm["userid"] != params["userid"] { //删除的id和用户id对应才能删除，以防数据错乱和攻击。
 		return
 	}
-
 	tbm["sj"] = strings.Split(tbm["sj"], " ")[0] // + " 00:00:00"
 	sj, _ := time.ParseInLocation("2006-01-02", tbm["sj"], time.Local)
 	//fmt.Println(time.Since(sj).Hours())
@@ -127,7 +126,7 @@ func FjJianjiedelete(w http.ResponseWriter, req *http.Request, params map[string
 func FjJianjieput(w http.ResponseWriter, req *http.Request, params map[string]string) {
 	//mu.Lock()
 	//defer mu.Unlock()
-	var r xbdb.ReInfo
+	//var r xbdb.ReInfo
 	//params := postparas(req)
 	/*
 		if !store.Verify(params["capid"], params["code"], true) {
@@ -135,6 +134,6 @@ func FjJianjieput(w http.ResponseWriter, req *http.Request, params map[string]st
 			json.NewEncoder(w).Encode(r)
 			return
 		}*/
-	r = Table["j"].Upd(params)
+	r := Table["j"].Upd(params)
 	json.NewEncoder(w).Encode(r)
 }

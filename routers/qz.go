@@ -47,10 +47,8 @@ func qzpost(w http.ResponseWriter, req *http.Request) {
 		json.NewEncoder(w).Encode(r)
 		return
 	}
-
 	buserid := Table[tbname].Ifo.FieldChByte("userid", params["userid"])
-	key := Table[tbname].Select.GetIdxPrefix([]byte("userid"), buserid)
-	tbcount := Table[tbname].Select.FindPrefixCount(key)
+	tbcount := Table[tbname].Select.FindIDXCount([]byte("userid"), buserid)
 	if tbcount < 3 { //最多能建立3个群组
 		r = PPOST(params)
 	} else {
@@ -62,14 +60,25 @@ func qzpost(w http.ResponseWriter, req *http.Request) {
 //删除群组
 func delqz(id, userid string) (r xbdb.ReInfo) {
 	tbname := "qz"
+
 	field := Table[tbname].Ifo.Fields[0]
 	pkval := Table[tbname].Ifo.FieldChByte(field, id)
-	tbd := Table[tbname].Select.Record(pkval)
+
+	tbd := Table["wz"].Select.WhereIdx([]byte("type"), pkval, true, 0, 1)
+	if tbd != nil {
+		r.Info = "群组存在文章，不能删除。"
+		tbd.Release()
+		return
+	}
+
+	tbd = Table[tbname].Select.Record(pkval)
 	rdmap := Table[tbname].RDtoMap(tbd.Rd[0])
+	tbd.Release()
 	if rdmap["userid"] == userid { //删除的id和用户id对应才能删除，以防数据错乱和攻击。
 		r = Table[tbname].Del(id)
 	}
 	tbd.Release()
+
 	return
 }
 

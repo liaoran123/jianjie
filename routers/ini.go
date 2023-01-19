@@ -52,7 +52,7 @@ func Ini() {
 	//params := map[string]string{"userid": "58", "wid": "59"}
 	//Table["test"].Ins(params)
 	//打印数据库//用于测试代码
-	Table["j"].Select.ForDbase(Pr)
+	//Table["j"].Select.ForDbase(Pr)
 
 }
 

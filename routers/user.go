@@ -5,7 +5,6 @@ import (
 	"jianjie/pubgo"
 	"jianjie/xbdb"
 	"net/http"
-	"strconv"
 )
 
 var (
@@ -37,19 +36,17 @@ func userpost(w http.ResponseWriter, req *http.Request) {
 	defer mu.Unlock()
 	var r xbdb.ReInfo
 	params := postparas(req)
-	if params["capid"] == "" || params["code"] == "" {
-		r.Info = "验证码不正确！"
-		json.NewEncoder(w).Encode(r)
-		return
-	}
+
 	if !store.Verify(params["capid"], params["code"], true) {
 		r.Info = "验证码不正确！"
 		json.NewEncoder(w).Encode(r)
 		return
 	}
 	bemali := Table["u"].Ifo.TypeChByte("email", params["email"])
-	key := Table["u"].Select.GetIdxPrefix([]byte("email"), bemali)
-	_, ok := Table["u"].Select.IterPrefixMove(key, true)
+	ok := Table["u"].Select.FindIDXExist([]byte("email"), bemali)
+	//key := Table["u"].Select.GetIdxPrefix([]byte("email"), bemali)
+	//_, ok := Table["u"].Select.IterPrefixMove(key, true)
+	//tbcount := Table[tbname].Select.FindPrefixCount([]byte("email"), key)
 	if ok {
 		r.Info = "邮箱已存在。"
 		json.NewEncoder(w).Encode(r)
@@ -61,12 +58,8 @@ func userpost(w http.ResponseWriter, req *http.Request) {
 }
 func userget(w http.ResponseWriter, req *http.Request) {
 	var r xbdb.ReInfo
-	params := getparas(req)                            //  postparas(req)
-	if params["capid"] == "" || params["code"] == "" { //这个验证码控件有漏洞
-		r.Info = "验证码不正确！"
-		json.NewEncoder(w).Encode(r)
-		return
-	}
+	params := getparas(req) //  postparas(req)
+
 	if !store.Verify(params["capid"], params["code"], true) {
 		r.Info = "验证码不正确！"
 		json.NewEncoder(w).Encode(r)
@@ -80,13 +73,14 @@ func userget(w http.ResponseWriter, req *http.Request) {
 		json.NewEncoder(w).Encode(r)
 		return
 	}
-	rd := Table["u"].Split(tbd.Rd[0])
+	rdmap := Table["u"].RDtoMap(tbd.Rd[0])
+	//rd := Table["u"].Split(tbd.Rd[0])
 
-	psw := string(rd[2])
-	id := xbdb.BytesToInt(rd[0])
-	sid := strconv.Itoa(id)
+	psw := rdmap["psw"] //string(rd[2])
+	id := rdmap["id"]   //xbdb.BytesToInt(rd[0])
+	fahao := rdmap["fahao"]
 	if psw == params["psw"] {
-		r.Info = "id:" + sid + ",法号:" + string(rd[3]) + "\n登陆成功!"
+		r.Info = "id:" + id + ",法号:" + fahao + "\n登陆成功!"
 		r.Succ = true
 	} else {
 		r.Info = "密码不对!"

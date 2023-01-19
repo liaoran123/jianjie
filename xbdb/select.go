@@ -178,12 +178,20 @@ func (s *Select) FindPrefixFun(key []byte, asc bool, f func(rd []byte) bool) {
 }
 
 //前缀遍历,统计记录数
-func (s *Select) FindPrefixCount(key []byte) (r int) {
+func (s *Select) FindIDXCount(fieldname, fieldvalue []byte) (r int) {
+	key := s.GetIdxPrefix(fieldname, fieldvalue)
 	iter, ok := s.IterPrefixMove(key, true)
 	if !ok {
 		return
 	}
 	r = NewIters(iter, ok, true, 0, -1).ForDataCount()
+	return
+}
+
+//根据前缀判断是否存在数据
+func (s *Select) FindIDXExist(fieldname, fieldvalue []byte) (r bool) {
+	key := s.GetIdxPrefix(fieldname, fieldvalue)
+	_, r = s.IterPrefixMove(key, true)
 	return
 }
 
