@@ -43,10 +43,7 @@ func userpost(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	bemali := Table["u"].Ifo.TypeChByte("email", params["email"])
-	ok := Table["u"].Select.FindIDXExist([]byte("email"), bemali)
-	//key := Table["u"].Select.GetIdxPrefix([]byte("email"), bemali)
-	//_, ok := Table["u"].Select.IterPrefixMove(key, true)
-	//tbcount := Table[tbname].Select.FindPrefixCount([]byte("email"), key)
+	ok := Table["u"].Select.WhereIdxExist([]byte("email"), bemali)
 	if ok {
 		r.Info = "邮箱已存在。"
 		json.NewEncoder(w).Encode(r)

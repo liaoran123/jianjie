@@ -48,7 +48,7 @@ func qzpost(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	buserid := Table[tbname].Ifo.FieldChByte("userid", params["userid"])
-	tbcount := Table[tbname].Select.FindIDXCount([]byte("userid"), buserid)
+	tbcount := Table[tbname].Select.WhereIdxCount([]byte("userid"), buserid)
 	if tbcount < 3 { //最多能建立3个群组
 		r = PPOST(params)
 	} else {
@@ -70,7 +70,6 @@ func delqz(id, userid string) (r xbdb.ReInfo) {
 		tbd.Release()
 		return
 	}
-
 	tbd = Table[tbname].Select.Record(pkval)
 	rdmap := Table[tbname].RDtoMap(tbd.Rd[0])
 	tbd.Release()
