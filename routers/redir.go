@@ -11,6 +11,7 @@ func Redir(w http.ResponseWriter, req *http.Request) {
 	http.Redirect(w, req, "/", http.StatusFound)
 }
 
+//更新服务器
 func Updb(w http.ResponseWriter, req *http.Request) {
 	Table["j"].Select.ForDbase(updbfun)
 }

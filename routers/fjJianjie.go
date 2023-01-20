@@ -6,7 +6,6 @@ import (
 	"jianjie/xbdb"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -112,9 +111,8 @@ func FjJianjiedelete(w http.ResponseWriter, req *http.Request, params map[string
 	if tbm["userid"] != params["userid"] { //删除的id和用户id对应才能删除，以防数据错乱和攻击。
 		return
 	}
-	tbm["sj"] = strings.Split(tbm["sj"], " ")[0] // + " 00:00:00"
-	sj, _ := time.ParseInLocation("2006-01-02", tbm["sj"], time.Local)
-	//fmt.Println(time.Since(sj).Hours())
+	sj, _ := time.ParseInLocation("2006-01-02 15:04:05", tbm["sj"], time.Local)
+
 	if time.Since(sj).Hours() > 81 {
 		r.Info = "超过3天不能删除。"
 		json.NewEncoder(w).Encode(r)

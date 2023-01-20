@@ -4,11 +4,6 @@ import (
 	"bytes"
 	"crypto/md5"
 	"encoding/hex"
-	"fmt"
-	"io/ioutil"
-	"net/http"
-	"net/url"
-	"strings"
 	"sync"
 )
 
@@ -22,6 +17,14 @@ var (
 	}
 )
 
+// 返回一个32位md5加密后的字符串
+func Md5(str string) string {
+	h := md5.New()
+	h.Write([]byte(str))
+	return hex.EncodeToString(h.Sum(nil))
+}
+
+/*
 func GetUrlData(url string) (r []byte) {
 	//url := "http://127.0.0.1:9007/hello?age=20&id=1&name=lisi"
 	req, _ := http.Get(url)
@@ -49,9 +52,4 @@ func GetData(wurl string) (r []byte) {
 	return data
 }
 
-// 返回一个32位md5加密后的字符串
-func Md5(str string) string {
-	h := md5.New()
-	h.Write([]byte(str))
-	return hex.EncodeToString(h.Sum(nil))
-}
+*/

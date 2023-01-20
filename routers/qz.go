@@ -5,6 +5,7 @@ import (
 	"jianjie/pubgo"
 	"jianjie/xbdb"
 	"net/http"
+	"strconv"
 )
 
 var (
@@ -50,7 +51,14 @@ func qzpost(w http.ResponseWriter, req *http.Request) {
 	buserid := Table[tbname].Ifo.FieldChByte("userid", params["userid"])
 	tbcount := Table[tbname].Select.WhereIdxCount([]byte("userid"), buserid)
 	if tbcount < 3 { //最多能建立3个群组
-		r = PPOST(params)
+		r = PPOST(params)                           //添加群组
+		lastid := Table[tbname].Ac.GetidNoInc() - 1 //根据自动增值-1得到最后的一条记录的id值
+		aparams := make(map[string]string)
+		aparams["userid"] = params["userid"]
+		aparams["type"] = strconv.Itoa(lastid)
+		aparams["pass"] = "1"
+		Table["admin"].Ins(aparams) //添加群组创建者为管理员
+
 	} else {
 		r.Info = "最多能建立3个群组"
 	}

@@ -46,6 +46,7 @@ func Ini() {
 	Table["hf"] = xbdb.NewTable(Xb, "hf")
 	Table["gbhf"] = xbdb.NewTable(Xb, "gbhf")
 	Table["sc"] = xbdb.NewTable(Xb, "sc")
+	Table["admin"] = xbdb.NewTable(Xb, "admin")
 
 	//测试代码
 	//Table["test"] = xbdb.NewTable(Xb, "test")

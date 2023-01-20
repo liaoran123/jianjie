@@ -66,7 +66,8 @@ func PPOST(params map[string]string) (r xbdb.ReInfo) {
 	filedname := params["existfiled"]
 	tbname := params["tbname"]
 	filedvalue := params[filedname]
-	if !exist(tbname, filedname, filedvalue) {
+	bfiledvalue := Table[tbname].Ifo.TypeChByte(filedname, filedvalue)
+	if !Table[tbname].Select.WhereIdxExist([]byte(filedname), bfiledvalue) {
 		r = Table[tbname].Ins(params)
 	}
 	return
@@ -78,12 +79,4 @@ func PDELETE(params map[string]string) (r xbdb.ReInfo) {
 func PPUT(params map[string]string) (r xbdb.ReInfo) {
 	r = Table[params["tbname"]].Upd(params)
 	return
-}
-
-//判断某字段的值是否存在
-func exist(tbanme, filedname, filedvalue string) bool {
-	bfiledvalue := Table[tbanme].Ifo.TypeChByte(filedname, filedvalue)
-	key := Table[tbanme].Select.GetIdxPrefix([]byte(filedname), bfiledvalue)
-	_, ok := Table[tbanme].Select.IterPrefixMove(key, true)
-	return ok
 }
