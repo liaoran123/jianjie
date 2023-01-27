@@ -71,6 +71,7 @@ func userget(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	rdmap := Table["u"].RDtoMap(tbd.Rd[0])
+	tbd.Release()
 	//rd := Table["u"].Split(tbd.Rd[0])
 
 	psw := rdmap["psw"] //string(rd[2])

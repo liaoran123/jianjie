@@ -113,7 +113,7 @@ func FjJianjiedelete(w http.ResponseWriter, req *http.Request, params map[string
 	}
 	sj, _ := time.ParseInLocation("2006-01-02 15:04:05", tbm["sj"], time.Local)
 
-	if time.Since(sj).Hours() > 81 {
+	if time.Since(sj).Hours() > 72 {
 		r.Info = "超过3天不能删除。"
 		json.NewEncoder(w).Encode(r)
 		return

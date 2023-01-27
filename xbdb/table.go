@@ -222,13 +222,13 @@ func (t *Table) DataToJsonforIfo(tbd *TbData, Ifo *TableInfo) (r *bytes.Buffer) 
 			if i != len(Ifo.FieldType)-1 {
 				jsonstr += ","
 			}
+			/*jsonstr = strings.Replace(jsonstr, "\n", "\\n", -1) //json转义
+
+			jsonstr = strings.Replace(jsonstr, "\t", "\\t", -1) //json转义
 			jsonstr = strings.Replace(jsonstr, "\n", "\\n", -1) //json转义
-			/*
-				jsonstr = strings.Replace(jsonstr, "\t", "\\t", -1) //json转义
-				jsonstr = strings.Replace(jsonstr, "\n", "\\n", -1) //json转义
-								content = strings.Replace(content, "\\u003c", "<", -1)
-					content = strings.Replace(content, "\\u003e", ">", -1)
-					content = strings.Replace(content, "\\u0026", "&", -1)
+							content = strings.Replace(content, "\\u003c", "<", -1)
+				content = strings.Replace(content, "\\u003e", ">", -1)
+				content = strings.Replace(content, "\\u0026", "&", -1)
 			*/
 			r.WriteString(jsonstr)
 		}
