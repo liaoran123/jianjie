@@ -109,7 +109,7 @@ func rdCount(params map[string]string) bool {
 	return count > maxcount
 }
 func PPOST(params map[string]string) (r xbdb.ReInfo) {
-	r = Table[params["tbname"]].Del(params["id"])
+	r = Table[params["tbname"]].Ins(params)
 	return
 }
 func PDELETE(params map[string]string) (r xbdb.ReInfo) {

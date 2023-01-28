@@ -4,6 +4,7 @@ package xbdb
 
 import (
 	"bytes"
+	"fmt"
 	"strconv"
 	"strings"
 	"sync"
@@ -193,31 +194,42 @@ func (t *Table) DataToJsonforIfo(tbd *TbData, Ifo *TableInfo) (r *bytes.Buffer) 
 		return
 	}
 	r = Bufpool.Get().(*bytes.Buffer)
-	var rdmap map[string]string
+	var value [][]byte
 	jsonstr := ""
-	valstr := ""
+	/*
+		[{"id":2,"title":"金刚经","fid":1,"isleaf":"0"},
+		{"id":3,"title":"六祖坛经","fid":1,"isleaf":"0"}]
+	*/
 	r.WriteString("{\"result\":[")
 	for j, v := range tbd.Rd {
 		if v == nil {
 			continue
 		}
 		r.WriteString("{")
-		rdmap = t.RDtoMap(v)
-		/*
-			[{"id":2,"title":"金刚经","fid":1,"isleaf":"0"},
-			{"id":3,"title":"六祖坛经","fid":1,"isleaf":"0"}]
-		*/
+		value = t.Split(v) //bytes.Split(v, []byte(Split))
+		if len(value) < len(Ifo.FieldType) {
+			fmt.Println("数据分解错误：", string(v), Ifo.FieldType)
+			continue
+		}
 		for i, fv := range Ifo.FieldType {
 			switch fv {
 			case "string", "time", "bool":
-				valstr = strconv.Quote(rdmap[Ifo.Fields[i]])
+				jsonstr = "\"" + Ifo.Fields[i] + "\":" + strconv.Quote(string(value[i])) //strconv.Quote自动加字符串号
 			default:
-				valstr = rdmap[Ifo.Fields[i]]
+				iv := Ifo.ByteChString(Ifo.FieldType[i], value[i])
+				jsonstr = "\"" + Ifo.Fields[i] + "\":" + iv
 			}
-			jsonstr = "\"" + Ifo.Fields[i] + "\":" + valstr
-			if i != len(rdmap)-1 {
+			if i != len(Ifo.FieldType)-1 {
 				jsonstr += ","
 			}
+			/*jsonstr = strings.Replace(jsonstr, "\n", "\\n", -1) //json转义
+
+			jsonstr = strings.Replace(jsonstr, "\t", "\\t", -1) //json转义
+			jsonstr = strings.Replace(jsonstr, "\n", "\\n", -1) //json转义
+							content = strings.Replace(content, "\\u003c", "<", -1)
+				content = strings.Replace(content, "\\u003e", ">", -1)
+				content = strings.Replace(content, "\\u0026", "&", -1)
+			*/
 			r.WriteString(jsonstr)
 		}
 		r.WriteString("}")

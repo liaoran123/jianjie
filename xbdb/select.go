@@ -13,8 +13,8 @@ import (
 
 /*查询执行流程，
 1，根据getprefix.go的表前缀规则获取key
-2，根据key获取游标数据iters。
-3，通过key和iters的各种组合成各种查询。主要是按索引和主键查询。
+2，通过key配合getiters.go各个函数获取各种查询游标数据iters初始化（主要是按索引和主键查询和顺序和倒序）。
+3，根据itersfor.go进行各种遍历。
 */
 type Select struct {
 	Db     *leveldb.DB
@@ -244,15 +244,6 @@ func (s *Select) RecordRand(bpk, epk []byte) (r *TbData) {
 	return
 }
 
-/*
-//根据索引获取索引记录列表
-func (s *Select) GetRecordsForIdx(idxname, idxvalue []byte, b, count int) (r *TbData) {
-	key := s.getIdxPrefix(idxname, idxvalue)
-	tbd = s.FindPrefix(key, true, b, count)
-	return
-}
-*/
-
 //根据索引记录列表返回表记录数据
 //b，开始记录，count，返回条数
 func (s *Select) WhereIdx(fieldname, value []byte, asc bool, b, count int) (r *TbData) { //GetTableRecordForIdx
@@ -326,13 +317,14 @@ func (s *Select) WhereIdxLikeFun(fieldname, value []byte, asc bool, f func(rd []
 	s.FindPrefixFun(key, asc, f)
 }
 
+/*
 //根据根据主键值获取一条数据
 func (s *Select) WherePK(value []byte) (r *TbData) { //GetTableRecordForIdx
-	key := s.GetPkKey(value)
-	r = s.Record(key)
+	//key := s.GetPkKey(value)
+	r = s.Record(value)
 	return
 }
-
+*/
 //根据根据主键值匹配获取数据，仅主键为字符串时有效
 //b，开始记录，count，返回条数
 func (s *Select) WherePKLike(value []byte, asc bool, b, count int) (r *TbData) { //GetTableRecordForIdx

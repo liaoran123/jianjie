@@ -68,12 +68,29 @@ func (i *Iters) ForData() (r *TbData) {
 	return
 }
 
-//遍历结果集，执行函数为参数
+//遍历记录结果集，执行函数为参数
+//该函数主要用于遍历记录集
 func (i *Iters) ForDataFun(f func(rd []byte) bool) {
 	loop := 0
 	for i.ok {
 		loop++
 		if f(KVToRd(i.iter.Key(), i.iter.Value())) {
+			i.ok = itermove[i.asc](i.iter)
+		} else {
+			break
+		}
+	}
+	i.iter.Release()
+	//fmt.Println("跟踪执行次数:", loop) //跟踪执行次数
+}
+
+//遍历KV结果集，执行函数为参数
+//该函数主要用于遍历kv集。多个组合查询，都需要遍历k的结果集，并且进行交集处理。
+func (i *Iters) ForKVFun(f func(k, v []byte) bool) {
+	loop := 0
+	for i.ok {
+		loop++
+		if f(i.iter.Key(), i.iter.Value()) {
 			i.ok = itermove[i.asc](i.iter)
 		} else {
 			break

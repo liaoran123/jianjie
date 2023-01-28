@@ -26,11 +26,11 @@ func (t *Table) Ins(params map[string]string) (r ReInfo) {
 	if params["id"] == "" { //如果主键为空，则是使用自动增值,只有类型是int时成立。
 		if t.Ac == nil {
 			t.newAutoinc()
-		} else {
-			t.Ac.id, _ = strconv.Atoi(params["id"])
-			t.Ac.id++ //将用户提交的id+1设置为自动增值的最后id
 		}
 		params["id"] = t.Ac.GetidStr()
+	} else {
+		t.Ac.id, _ = strconv.Atoi(params["id"])
+		t.Ac.id++ //将用户提交的id+1设置为自动增值的最后id
 	}
 	vals := t.StrToByte(params)
 	r = t.Act(vals, "insert")
@@ -50,7 +50,7 @@ func (t *Table) put(k, v []byte) (r ReInfo) {
 	return
 }
 func (t *Table) newAutoinc() {
-	iter := t.Select.IterPrefix([]byte(t.Name + Split))
+	iter := t.Select.IterPrefix(t.Select.GetTbKey()) //[]byte(t.Name + Split)
 	var key []byte
 	if iter.Last() {
 		key = iter.Key()
