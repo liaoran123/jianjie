@@ -23,7 +23,8 @@ func main() {
 	//http.HandleFunc("/static/", routers.Static) //静态文件服务器
 	http.HandleFunc("/pubtb/", routers.Pubtb)
 	http.HandleFunc("/idxget/", routers.PubIDXGet)
-	http.HandleFunc("/pkget/", routers.PubPkGet)
+	http.HandleFunc("/gettb/", routers.PubGetTB)
+	http.HandleFunc("/getone/", routers.PubGetTBOne)
 
 	http.HandleFunc("/user/", routers.User)
 	http.HandleFunc("/jianjie/", routers.FjJianjie)

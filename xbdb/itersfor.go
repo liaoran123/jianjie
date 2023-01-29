@@ -123,3 +123,14 @@ func KVToRd(k, v []byte) (r []byte) {
 	r = JoinBytes(bytes.Join(ks, []byte(Split)), []byte(Split), v)
 	return
 }
+
+//获取索引key的主键id
+func GetPKId(idxkey []byte) (r []byte) {
+	ks := SplitRd(idxkey)
+	////将key去除第一个前缀，剩下的就是数据，有以下2中情况
+	//索引：k=ca,fid-3-7 v=    得到:3-7-  (后面是空值)
+	//主键: k=ca-1 v=ddd-ccdd-fff 得到:1-ddd-ccdd-fff
+	klen := len(ks)
+	r = ks[klen-1] //k的最后一个值
+	return
+}

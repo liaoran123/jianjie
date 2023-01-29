@@ -49,12 +49,16 @@ func qzpost(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	buserid := Table[tbname].Ifo.FieldChByte("userid", params["userid"])
+	if params["pass"] == "" {
+		params["pass"] = "1" //默认是通过。
+	}
 	tbcount := Table[tbname].Select.WhereIdxCount([]byte("userid"), buserid)
 	if tbcount < 3 { //最多能建立3个群组
 		r = Table[tbname].Ins(params)               //添加群组
 		lastid := Table[tbname].Ac.GetidNoInc() - 1 //根据自动增值-1得到最后的一条记录的id值
 		aparams := make(map[string]string)
 		aparams["userid"] = params["userid"]
+		aparams["fahao"] = params["fahao"]
 		aparams["type"] = strconv.Itoa(lastid)
 		aparams["pass"] = "1"
 		Table["admin"].Ins(aparams) //添加群组创建者为管理员
@@ -71,14 +75,19 @@ func delqz(id, userid string) (r xbdb.ReInfo) {
 
 	field := Table[tbname].Ifo.Fields[0]
 	pkval := Table[tbname].Ifo.FieldChByte(field, id)
-
-	tbd := Table["wz"].Select.WhereIdx([]byte("type"), pkval, true, 0, 1)
-	if tbd != nil {
+	/*
+		tbd := Table["wz"].Select.WhereIdx([]byte("type"), pkval, true, 0, 1)
+		if tbd != nil {
+			r.Info = "群组存在文章，不能删除。"
+			tbd.Release()
+			return
+		}*/
+	ct := Table["wz"].Select.WhereIdxExist([]byte("type"), pkval)
+	if ct {
 		r.Info = "群组存在文章，不能删除。"
-		tbd.Release()
 		return
 	}
-	tbd = Table[tbname].Select.Record(pkval)
+	tbd := Table[tbname].Select.Record(pkval)
 	rdmap := Table[tbname].RDtoMap(tbd.Rd[0])
 	tbd.Release()
 	if rdmap["userid"] == userid { //删除的id和用户id对应才能删除，以防数据错乱和攻击。
