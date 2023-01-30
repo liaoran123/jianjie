@@ -64,12 +64,12 @@ func Pr(k, v []byte) bool {
 }
 func createtbs(dbinfo *xbdb.TableInfo) {
 	if dbinfo.GetInfo("u").FieldType == nil { //创建用户表
-		name := "u"                                                                  //user                                                              //目录表
-		fields := []string{"id", "email", "psw", "fahao", "jianjie", "sj"}           //字段，编码，邮箱，密码，法号。简介，注册时间。
-		fieldType := []string{"int", "string", "string", "string", "string", "time"} //字段类型
-		idxs := []string{"1", "3"}                                                   //索引字段,fields的下标对应的字段。支持组合查询，字段之间用,分隔
-		fullText := []string{}                                                       //考据级全文搜索索引字段的下标。
-		ftlen := "7"                                                                 //全文搜索的长度，中文默认是7
+		name := "u"                                                                          //user                                                              //目录表
+		fields := []string{"id", "email", "psw", "fahao", "jianjie", "pass", "sj"}           //字段，编码，邮箱，密码，法号。简介，通过（默认。0，则不通过。删除用户设置为0即可）,注册时间。
+		fieldType := []string{"int", "string", "string", "string", "string", "bool", "time"} //字段类型
+		idxs := []string{"1", "3"}                                                           //索引字段,fields的下标对应的字段。支持组合查询，字段之间用,分隔
+		fullText := []string{}                                                               //考据级全文搜索索引字段的下标。
+		ftlen := "7"                                                                         //全文搜索的长度，中文默认是7
 		r := dbinfo.Create(name, ftlen, fields, fieldType, idxs, fullText)
 		fmt.Printf("r: %v\n", r)
 

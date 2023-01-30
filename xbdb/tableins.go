@@ -18,6 +18,9 @@ func (t *Table) Insert(vals [][]byte) (r ReInfo) {
 		t.Ac.id = BytesToInt(vals[0]) + 1 //将用户提交的id+1设置为自动增值的最后id
 	}
 	r = t.Act(vals, "insert")
+	if r.Succ {
+		r.LastId = t.Ac.id - 1
+	}
 	return
 }
 
@@ -34,6 +37,9 @@ func (t *Table) Ins(params map[string]string) (r ReInfo) {
 	}
 	vals := t.StrToByte(params)
 	r = t.Act(vals, "insert")
+	if r.Succ {
+		r.LastId = t.Ac.id - 1
+	}
 	return
 }
 

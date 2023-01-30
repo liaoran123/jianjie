@@ -99,6 +99,8 @@ func rdCount(params map[string]string) bool {
 	}
 	tblimit := make(map[string]string, 1) //直接在内存设置参数
 	tblimit["qz-maxcount"] = "3"          //qz表maxcount=3
+	tblimit["wz-maxcount"] = "3"
+	tblimit["j-maxcount"] = "3"
 
 	tbname := params["tbname"]
 	filedvalue := params[filedname]
@@ -123,12 +125,13 @@ func PDELETE(params map[string]string) (r xbdb.ReInfo) {
 
 //超时不能删除文章
 func rdTimeout(params map[string]string) bool {
-	timeoutfield := params["timeout"] //timeout的字段
+	timeoutfield := params["timeoutfield"] //timeout的字段
 	if timeoutfield == "" {
 		return false
 	}
-	tblimit := make(map[string]int64, 1)           //直接在内存设置参数
-	tblimit["j-timeout"] = 3 * 24 * 60 * 60 * 1000 //j表timeout=3不能删除
+	tblimit := make(map[string]int64, 1)            //直接在内存设置参数
+	tblimit["j-timeout"] = 3 * 24 * 60 * 60 * 1000  //j表timeout=3不能删除
+	tblimit["wz-timeout"] = 3 * 24 * 60 * 60 * 1000 //j表timeout=3不能删除
 
 	tbname := params["tbname"]
 	bid := Table[tbname].Ifo.FieldChByte(Table[tbname].Ifo.Fields[0], params["id"])
