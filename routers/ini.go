@@ -55,7 +55,7 @@ func Ini() {
 		r := Table["test"].Ins(params)
 		fmt.Printf("r: %v\n", r)
 	*/
-	params1 := map[string]string{"id": "1", "zd0": "21"} //, "zd1": "众生颠倒",, "zd0": "1000"
+	params1 := map[string]string{"id": "1", "zd1": "众生颠倒"} //, "zd1": "众生颠倒",, "zd0": "1000"
 	r1 := Table["test"].Upd(params1)
 	fmt.Printf("r1: %v\n", r1)
 

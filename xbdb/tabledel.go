@@ -21,12 +21,8 @@ func (t *Table) Delete(pk []byte) (r ReInfo) {
 	vals = append(vals, []byte{}) // 切片扩展1个空间
 	copy(vals[0+1:], vals[0:])    // a[i:]向后移动1个位置
 	vals[0] = pk
-	/*               // 设置新添加的元素
-	//反转义数据
-	for i := 0; i < len(vals); i++ {
-		vals[i] = t.Ifo.ChToSplit(vals[i])
-	}*/
-	//删除表索引
+
+	//删除表记录
 	r = t.Act(vals, "delete")
 	return
 }

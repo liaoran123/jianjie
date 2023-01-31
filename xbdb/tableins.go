@@ -16,9 +16,9 @@ func (t *Table) Insert(vals [][]byte) (r ReInfo) {
 		}
 		vals[0] = t.Ifo.TypeChByte("int", t.Ac.GetidStr())
 		r.LastId = strconv.Itoa(t.Ac.GetidDic())
-	} //else {//修改的时候会冲突，故而不能如此设计
-	//t.Ac.id = BytesToInt(vals[0]) + 1 //将用户提交的id+1设置为自动增值的最后id
-	//}
+	} else {
+		t.Ac.id = BytesToInt(vals[0]) + 1 //将用户提交的id+1设置为自动增值的最后id。
+	}
 	r = t.Act(vals, "insert")
 	if r.Succ {
 		if r.LastId == "" { //非自动增值的情况
@@ -35,10 +35,10 @@ func (t *Table) Ins(params map[string]string) (r ReInfo) {
 			t.newAutoinc()
 		}
 		params["id"] = t.Ac.GetidStr()
-	} //else {//修改的时候会冲突，故而不能如此设计
-	//t.Ac.id, _ = strconv.Atoi(params["id"])
-	//t.Ac.id++ //将用户提交的id+1设置为自动增值的最后id
-	//}
+	} else {
+		t.Ac.id, _ = strconv.Atoi(params["id"])
+		t.Ac.id++ //将用户提交的id+1设置为自动增值的最后id
+	}
 	vals := t.StrToByte(params)
 	r = t.Act(vals, "insert")
 	if r.Succ {

@@ -29,7 +29,7 @@ func (t *Table) Upd(params map[string]string) (r ReInfo) {
 		r.Info = err.Error()
 		return
 	}
-	//组织新数据
+	//组织数据
 	var dvals [][]byte
 	dvals = append(dvals, uvals[0])
 	dvals = append(dvals, SplitRd(data)...)
@@ -40,7 +40,7 @@ func (t *Table) Upd(params map[string]string) (r ReInfo) {
 	//更新数据
 	for i, v := range uvals {
 		if len(v) != 0 { //即是要修改的字段
-			dvals[i] = v //更改要更改的字段值
+			dvals[i] = v //更改要更新的字段值
 		}
 	}
 	r = t.Acts(dvals, "insert", updatefield) //添加新数据

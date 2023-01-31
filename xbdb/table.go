@@ -55,8 +55,8 @@ func (t *Table) ForDisparte(nr string, ftlen int) (disparte []string) {
 
 //添加或删除一条记录，以及相关索引等所有数据
 func (t *Table) Act(vals [][]byte, Act string) (r ReInfo) {
-	var updatefield []bool
-	return t.Acts(vals, Act, updatefield)
+	//var updatefield []bool
+	return t.Acts(vals, Act, nil)
 }
 
 //添加或删除一条记录，以及相关索引等所有数据等事务
@@ -83,7 +83,7 @@ func (t *Table) Acts(vals [][]byte, Act string, updatefield []bool) (r ReInfo) {
 			continue
 		}
 		ivs = strings.Split(iv, ",")
-		if len(updatefield) > 0 { //修改的情况
+		if updatefield != nil { //修改的情况
 			if !isUpdateField(ivs, updatefield) {
 				continue //不是修改字段则退出，不用添加或删除原有索引
 			}
@@ -114,7 +114,7 @@ func (t *Table) Acts(vals [][]byte, Act string, updatefield []bool) (r ReInfo) {
 			continue
 		}
 		idx, _ = strconv.Atoi(i)
-		if len(updatefield) > 0 { //修改的情况
+		if updatefield != nil { //修改的情况
 			if !updatefield[idx] { //非修改字段不添加/删除索引
 				continue
 			}
