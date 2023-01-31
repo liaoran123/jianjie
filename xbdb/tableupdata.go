@@ -30,13 +30,14 @@ func (t *Table) Upd(params map[string]string) (r ReInfo) {
 		return
 	}
 	//组织新数据
-	var newvals [][]byte
-	newvals = append(newvals, vals[0])
-	newvals = append(newvals, SplitRd(data)...)
-	r = t.Acts(newvals, "delete", updatefield) //删除旧数据
+	var oldvals [][]byte
+	oldvals = append(oldvals, vals[0])
+	oldvals = append(oldvals, SplitRd(data)...)
+	r = t.Acts(oldvals, "delete", updatefield) //删除旧数据
 	if !r.Succ {
 		return
 	}
+	newvals := oldvals
 	for i, v := range vals {
 		if len(v) != 0 { //即是要修改的字段
 			newvals[i] = v //更改要更改的字段值
