@@ -129,9 +129,9 @@ func rdTimeout(params map[string]string) bool {
 	if timeoutfield == "" {
 		return false
 	}
-	tblimit := make(map[string]int64, 1)            //直接在内存设置参数
-	tblimit["j-timeout"] = 3 * 24 * 60 * 60 * 1000  //j表timeout=3不能删除
-	tblimit["wz-timeout"] = 3 * 24 * 60 * 60 * 1000 //j表timeout=3不能删除
+	tblimit := make(map[string]float64, 1) //直接在内存设置参数
+	tblimit["j-timeout"] = 3 * 24          //* 60 * 60 * 1000  //j表timeout=3天不能删除
+	tblimit["wz-timeout"] = 3 * 24         //* 60 * 60 * 1000 //j表timeout=3天不能删除
 
 	tbname := params["tbname"]
 	bid := Table[tbname].Ifo.FieldChByte(Table[tbname].Ifo.Fields[0], params["id"])
@@ -139,7 +139,8 @@ func rdTimeout(params map[string]string) bool {
 	rdmap := Table[tbname].RDtoMap(tbd.Rd[0])
 	rdtime := rdmap[timeoutfield]
 	sj, _ := time.ParseInLocation("2006-01-02 15:04:05", rdtime, time.Local)
-	return time.Since(sj).Milliseconds() > tblimit[tbname+"-timeout"]
+	return time.Since(sj).Hours() > tblimit[tbname+"-timeout"]
+	//	return time.Since(sj).Milliseconds() > tblimit[tbname+"-timeout"]
 }
 func PPUT(params map[string]string) (r xbdb.ReInfo) {
 	r = Table[params["tbname"]].Upd(params)

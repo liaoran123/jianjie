@@ -6,10 +6,11 @@ import (
 	"bytes"
 )
 
-//删除一条数据以及相关索引等所有数据
+//删除一条数据记录以及相关索引等所有数据
 //pk=id值
 func (t *Table) Delete(pk []byte) (r ReInfo) {
-	key := JoinBytes([]byte(t.Name+Split), pk)
+	//key := JoinBytes([]byte(t.Name+Split), pk)
+	key := JoinBytes(t.Select.GetTbKey(), pk)
 	data, err := t.Db.Get(key, nil)
 	if err != nil {
 		r.Info = err.Error()

@@ -9,17 +9,21 @@ import (
 
 //添加一条数据以及相关索引等所有数据，默认数据与字段一一对应。
 func (t *Table) Insert(vals [][]byte) (r ReInfo) {
-	if string(vals[0]) == "\x00\x00\x00\x00" { //如果主键为空，则是使用自动增值。只有类型是int时成立。
+	//if string(vals[0]) == "" { //"\x00\x00\x00\x00" { //如果主键为空，则是使用自动增值。只有类型是int时成立。
+	if len(vals[0]) == 0 {
 		if t.Ac == nil {
 			t.newAutoinc()
 		}
 		vals[0] = t.Ifo.TypeChByte("int", t.Ac.GetidStr())
-	} else {
-		t.Ac.id = BytesToInt(vals[0]) + 1 //将用户提交的id+1设置为自动增值的最后id
-	}
+		r.LastId = strconv.Itoa(t.Ac.GetidDic())
+	} //else {//修改的时候会冲突，故而不能如此设计
+	//t.Ac.id = BytesToInt(vals[0]) + 1 //将用户提交的id+1设置为自动增值的最后id
+	//}
 	r = t.Act(vals, "insert")
 	if r.Succ {
-		r.LastId = t.Ac.id - 1
+		if r.LastId == "" { //非自动增值的情况
+			r.LastId = string(vals[0])
+		}
 	}
 	return
 }
@@ -31,14 +35,14 @@ func (t *Table) Ins(params map[string]string) (r ReInfo) {
 			t.newAutoinc()
 		}
 		params["id"] = t.Ac.GetidStr()
-	} else {
-		t.Ac.id, _ = strconv.Atoi(params["id"])
-		t.Ac.id++ //将用户提交的id+1设置为自动增值的最后id
-	}
+	} //else {//修改的时候会冲突，故而不能如此设计
+	//t.Ac.id, _ = strconv.Atoi(params["id"])
+	//t.Ac.id++ //将用户提交的id+1设置为自动增值的最后id
+	//}
 	vals := t.StrToByte(params)
 	r = t.Act(vals, "insert")
 	if r.Succ {
-		r.LastId = t.Ac.id - 1
+		r.LastId = params["id"]
 	}
 	return
 }

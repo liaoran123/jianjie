@@ -32,7 +32,10 @@ func (a *Autoinc) GetidNoInc() int {
 	id := a.id
 	return id
 }
-
+func (a *Autoinc) GetidDic() int {
+	id := a.id - 1
+	return id
+}
 func (a *Autoinc) GetidStrNoInc() string {
 	return strconv.Itoa(a.GetidNoInc())
 }
