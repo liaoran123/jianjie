@@ -11,6 +11,8 @@ import (
 	"github.com/syndtr/goleveldb/leveldb"
 )
 
+var actmap map[string]func(k, v []byte) (r ReInfo)
+
 //表的类
 type Table struct {
 	Name   string
@@ -51,10 +53,16 @@ func (t *Table) ForDisparte(nr string, ftlen int) (disparte []string) {
 	return
 }
 
-var actmap map[string]func(k, v []byte) (r ReInfo)
-
 //添加或删除一条记录，以及相关索引等所有数据
 func (t *Table) Act(vals [][]byte, Act string) (r ReInfo) {
+	var updatefield []bool
+	return t.Acts(vals, Act, updatefield)
+}
+
+//添加或删除一条记录，以及相关索引等所有数据等事务
+//updatefield,修改时用。用于记录那个字段需要修改。与字段一一对应。
+//修改某个某些字段时，不用把所有索引都删除再重新添加，导致性能不高和不灵活。
+func (t *Table) Acts(vals [][]byte, Act string, updatefield []bool) (r ReInfo) {
 	if actmap == nil {
 		actmap = map[string]func(k, v []byte) (r ReInfo){
 			"insert": t.put,
@@ -75,12 +83,14 @@ func (t *Table) Act(vals [][]byte, Act string) (r ReInfo) {
 			continue
 		}
 		ivs = strings.Split(iv, ",")
+		if len(updatefield) > 0 { //len(updatefield) == 0 则是添加，否则是修改的情况
+			if !isUpdateField(ivs, updatefield) {
+				continue //不是修改字段则退出，不用添加或删除原有索引
+			}
+		}
 		for i := 0; i < len(ivs); i++ { //组织单个或组合索引key
 			idx, _ = strconv.Atoi(ivs[i])
 			idxval = vals[idx]
-			if idxval == nil { //有空值不添加/删除索引
-				continue
-			}
 			idxfields += t.Ifo.Fields[idx]       //累加
 			idxvals = JoinBytes(idxvals, idxval) //累加
 			if i != len(ivs)-1 {                 //不是末尾，则加分隔符
@@ -92,6 +102,7 @@ func (t *Table) Act(vals [][]byte, Act string) (r ReInfo) {
 		if !r.Succ {
 			return
 		}
+		//重置
 		idxfields = ""
 		idxvals = idxvals[:0]
 	}
@@ -103,8 +114,10 @@ func (t *Table) Act(vals [][]byte, Act string) (r ReInfo) {
 			continue
 		}
 		idx, _ = strconv.Atoi(i)
-		if vals[idx] == nil { //空值不添加/删除索引
-			continue
+		if len(updatefield) > 0 { //len(updatefield) == 0 则是添加，否则是修改的情况
+			if !updatefield[idx] { //非修改字段不添加/删除索引
+				continue
+			}
 		}
 		ftIdx = t.ForDisparte(string(vals[idx]), ftlen)
 		for p, f := range ftIdx {
@@ -115,8 +128,20 @@ func (t *Table) Act(vals [][]byte, Act string) (r ReInfo) {
 		}
 	}
 	r.Succ = true
-	r.Info = "成功！"
+	r.Info = "ok"
 	return
+}
+
+//是不是修改字段。
+//由于支持组合索引，故而需要循环，看似复制些
+func isUpdateField(ks []string, updatefield []bool) bool {
+	isf := false
+	idx := 0
+	for i := 0; i < len(ks); i++ { //单个或组合索引。由于支持组合索引，故而需要循环，看似复制些
+		idx, _ = strconv.Atoi(ks[i])
+		isf = isf || updatefield[idx]
+	}
+	return isf
 }
 
 //添加/删除主键数据，即添加/删除一条记录。

@@ -16,8 +16,7 @@ type ReInfo struct {
 	Succ   bool   `json:"Succ"`
 	Info   string `json:"Info"`
 	LastId string `json:"LastId"`
-	//添加记录的id，主要是记录自动增值的最后id。由于有非自动增值的情况，故而使用string，可以兼容。
-	//当是int转的byte是需要
+	//添加记录的id，主要是记录自动增值的id。由于有非自动增值的情况，故而使用string，可以兼容。
 	Count int `json:"Count"` //修改、删除的记录数
 }
 

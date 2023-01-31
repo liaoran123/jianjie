@@ -32,6 +32,8 @@ func (a *Autoinc) GetidNoInc() int {
 	id := a.id
 	return id
 }
+
+//获取未增值前的id值
 func (a *Autoinc) GetidDic() int {
 	id := a.id - 1
 	return id

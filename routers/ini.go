@@ -49,17 +49,24 @@ func Ini() {
 	Table["admin"] = xbdb.NewTable(Xb, "admin")
 
 	//测试代码
-	//Table["test"] = xbdb.NewTable(Xb, "test")
+	Table["test"] = xbdb.NewTable(Xb, "test")
+	/*
+		params := map[string]string{"zd0": "11", "zd1": "颠倒思维"}
+		r := Table["test"].Ins(params)
+		fmt.Printf("r: %v\n", r)
+	*/
+	params1 := map[string]string{"id": "1", "zd1": "众生颠倒"} //, "zd1": "普贤菩萨",, "zd0": "1000"
+	r1 := Table["test"].Upd(params1)
+	fmt.Printf("r1: %v\n", r1)
 
-	//params := map[string]string{"userid": "58", "wid": "59"}
-	//Table["test"].Ins(params)
 	//打印数据库//用于测试代码
-	//Table["j"].Select.ForDbase(Pr)
+	Table["test"].Select.ForTb(Pr)
 
 }
 
 func Pr(k, v []byte) bool {
 	fmt.Println(string(k), string(v))
+	//Table["test"].Db.Delete(k, nil)
 	return true
 }
 func createtbs(dbinfo *xbdb.TableInfo) {
@@ -170,10 +177,10 @@ func createtbs(dbinfo *xbdb.TableInfo) {
 	}
 	if dbinfo.GetInfo("test").FieldType == nil { //创建专用测试表
 		name := "test"                                   //收藏表
-		fields := []string{"id", "userid", "wid"}        //字段，编码，用户编码，地址，标题，时间。
+		fields := []string{"id", "zd0", "zd1"}           //字段，编码，用户编码，地址，标题，时间。
 		fieldType := []string{"int", "string", "string"} //字段类型
-		idxs := []string{"1,2"}                          //索引字段,fields的下标对应的字段。支持组合查询，字段之间用,分隔。组合查询，就是为了避开 where ...and...的情况，直接用组合索引代替解决。
-		fullText := []string{}                           //考据级全文搜索索引字段的下标。
+		idxs := []string{"1"}                            //索引字段,fields的下标对应的字段。支持组合查询，字段之间用,分隔。组合查询，就是为了避开 where ...and...的情况，直接用组合索引代替解决。
+		fullText := []string{"2"}                        //考据级全文搜索索引字段的下标。
 		ftlen := "7"                                     //全文搜索的长度，中文默认是7
 		r := dbinfo.Create(name, ftlen, fields, fieldType, idxs, fullText)
 		fmt.Printf("r: %v\n", r)
