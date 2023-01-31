@@ -60,8 +60,8 @@ func (t *Table) Act(vals [][]byte, Act string) (r ReInfo) {
 }
 
 //添加或删除一条记录，以及相关索引等所有数据等事务
-//updatefield,修改时用。用于记录那个字段需要修改。与字段一一对应。
-//修改某个某些字段时，不用把所有索引都删除再重新添加，导致性能不高和不灵活。
+//updatefield,修改时用。用于记录需要修改那个字段。与表字段一一对应。
+//修改某个某些字段时，updatefield作为判断，不用把所有索引都删除再重新添加，导致性能不高和不灵活。
 func (t *Table) Acts(vals [][]byte, Act string, updatefield []bool) (r ReInfo) {
 	if actmap == nil {
 		actmap = map[string]func(k, v []byte) (r ReInfo){
@@ -83,7 +83,7 @@ func (t *Table) Acts(vals [][]byte, Act string, updatefield []bool) (r ReInfo) {
 			continue
 		}
 		ivs = strings.Split(iv, ",")
-		if len(updatefield) > 0 { //len(updatefield) == 0 则是添加，否则是修改的情况
+		if len(updatefield) > 0 { //修改的情况
 			if !isUpdateField(ivs, updatefield) {
 				continue //不是修改字段则退出，不用添加或删除原有索引
 			}
@@ -114,7 +114,7 @@ func (t *Table) Acts(vals [][]byte, Act string, updatefield []bool) (r ReInfo) {
 			continue
 		}
 		idx, _ = strconv.Atoi(i)
-		if len(updatefield) > 0 { //len(updatefield) == 0 则是添加，否则是修改的情况
+		if len(updatefield) > 0 { //修改的情况
 			if !updatefield[idx] { //非修改字段不添加/删除索引
 				continue
 			}
