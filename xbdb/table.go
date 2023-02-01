@@ -55,7 +55,6 @@ func (t *Table) ForDisparte(nr string, ftlen int) (disparte []string) {
 
 //添加或删除一条记录，以及相关索引等所有数据
 func (t *Table) Act(vals [][]byte, Act string) (r ReInfo) {
-	//var updatefield []bool
 	return t.Acts(vals, Act, nil)
 }
 
@@ -128,7 +127,7 @@ func (t *Table) Acts(vals [][]byte, Act string, updatefield []bool) (r ReInfo) {
 		}
 	}
 	r.Succ = true
-	r.Info = "ok"
+	r.Info = "成功。"
 	return
 }
 
@@ -178,11 +177,27 @@ func (t *Table) StrToByte(params map[string]string) (r [][]byte) {
 
 //将记录转换为map
 func (t *Table) RDtoMap(Rd []byte) (r map[string]string) {
-	r = make(map[string]string, len(t.Ifo.Fields))
+	r = t.FieldValuetoMap(Rd, &t.Ifo)
+	return
+}
+
+//将记录转换为map
+func (t *Table) FieldValuetoMap(Rd []byte, Ifo *TableInfo) (r map[string]string) {
+	r = make(map[string]string, len(Ifo.Fields))
 	vs := t.Split(Rd)
-	for i, v := range vs {
-		r[t.Ifo.Fields[i]] = t.Ifo.ByteChString(t.Ifo.FieldType[i], v) //将包括分隔符的转义数据恢复
+
+	vslen := len(vs)
+	for i, v := range Ifo.Fields {
+		if i < vslen {
+			r[v] = Ifo.ByteChString(Ifo.FieldType[i], vs[i])
+		} else { //添加新字段时，字段比旧数据数组长度大。
+			r[v] = ""
+		}
 	}
+	/*
+		for i, v := range vs {
+			r[Ifo.Fields[i]] = Ifo.ByteChString(Ifo.FieldType[i], v) //将包括分隔符的转义数据恢复
+		}*/
 	return
 }
 
@@ -220,7 +235,7 @@ func (t *Table) DataToJsonforIfo(tbd *TbData, Ifo *TableInfo) (r *bytes.Buffer) 
 			continue
 		}
 		r.WriteString("{")
-		rdmap = t.RDtoMap(v)
+		rdmap = t.FieldValuetoMap(v, Ifo)
 		/*
 			[{"id":2,"title":"金刚经","fid":1,"isleaf":"0"},
 			{"id":3,"title":"六祖坛经","fid":1,"isleaf":"0"}]

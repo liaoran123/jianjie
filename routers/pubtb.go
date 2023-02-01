@@ -111,6 +111,9 @@ func rdCount(params map[string]string) bool {
 	return count > maxcount
 }
 func PPOST(params map[string]string) (r xbdb.ReInfo) {
+	if params["sj"] == "" {
+		params["sj"] = "now()"
+	}
 	r = Table[params["tbname"]].Ins(params)
 	return
 }

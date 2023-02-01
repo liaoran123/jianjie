@@ -75,7 +75,9 @@ func FjJianjiepost(w http.ResponseWriter, req *http.Request) {
 		json.NewEncoder(w).Encode(r)
 		return
 	}
-	//params["sj"] = strings.Split(time.Now().String(), ".")[0]
+	if params["sj"] == "" {
+		params["sj"] = "now()"
+	}
 	r = Table["j"].Ins(params)
 	json.NewEncoder(w).Encode(r)
 
@@ -97,12 +99,7 @@ func FjJianjiedelete(w http.ResponseWriter, req *http.Request, params map[string
 	//defer mu.Unlock()
 	//params := postparas(req)
 	var r xbdb.ReInfo
-	/*
-		if !store.Verify(params["capid"], params["code"], true) {
-			r.Info = "验证码不正确！"
-			json.NewEncoder(w).Encode(r)
-			return
-		}*/
+
 	//打开要删除的记录，获取时间，超过3天不能删除
 	key := Table["j"].Ifo.FieldChByte("id", params["id"])
 	tbd := Table["j"].Select.Record(key)

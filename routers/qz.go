@@ -54,6 +54,9 @@ func qzpost(w http.ResponseWriter, req *http.Request) {
 	}
 	tbcount := Table[tbname].Select.WhereIdxCount([]byte("userid"), buserid)
 	if tbcount < 3 { //最多能建立3个群组
+		if params["sj"] == "" {
+			params["sj"] = "now()"
+		}
 		r = Table[tbname].Ins(params)               //添加群组
 		lastid := Table[tbname].Ac.GetidNoInc() - 1 //根据自动增值-1得到最后的一条记录的id值
 		aparams := make(map[string]string)

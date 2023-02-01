@@ -23,14 +23,15 @@ const (
 
 //表信息的类。//默认必须第一个字段是主键id
 type TableInfo struct {
-	Db        *leveldb.DB
-	Name      string   //表名
-	Fields    []string //字段
-	FieldType []string //字段对应的类型
-	Pk        string   //默认必须有一个自动增值的主键id
-	Idxs      []string //索引字段的下标，不使用[]int，转换byte太麻烦。
-	FullText  []string //考据级全文搜索索引字段的下标。
-	FTLen     string   //全文搜索的长度，中文默认是7
+	Db          *leveldb.DB
+	Name        string   //表名
+	Fields      []string //字段。只记录用户先后顺序添加的Fields名称，凡是添加都在末尾添加。
+	OrderFields []string //字段。记录用户对各个Field进行位移后的排序结果。用作按该顺序显示给用户。
+	FieldType   []string //字段对应的类型
+	Pk          string   //默认必须有一个自动增值的主键id
+	Idxs        []string //索引字段的下标，不使用[]int，转换byte太麻烦。
+	FullText    []string //考据级全文搜索索引字段的下标。
+	FTLen       string   //全文搜索的长度，中文默认是7
 }
 
 func NewTableInfo(DB *leveldb.DB) *TableInfo {
@@ -40,7 +41,7 @@ func NewTableInfo(DB *leveldb.DB) *TableInfo {
 }
 
 //创建/修改一个表，默认第一个字段必须是主键
-func (t *TableInfo) Create(name, ftlen string, fields, fieldType, idxs, fullText []string) (r ReInfo) {
+func (t *TableInfo) Create(name, ftlen string, fields, OrderFields, fieldType, idxs, fullText []string) (r ReInfo) {
 	if len(fieldType) != len(fields) {
 		r.Info = "字段和类型数据不匹配！"
 		return
@@ -48,11 +49,12 @@ func (t *TableInfo) Create(name, ftlen string, fields, fieldType, idxs, fullText
 
 	tbpfx := TbInfopfx + Split + name //表信息前缀
 
-	r.Succ = t.Db.Put([]byte(tbpfx), []byte(strings.Join(fields, Split)), nil) == nil                            //添加字段信息
-	r.Succ = r.Succ && t.Db.Put([]byte(tbpfx+IdxSplit+"ty"), []byte(strings.Join(fieldType, Split)), nil) == nil //添加字段类型信息
-	r.Succ = r.Succ && t.Db.Put([]byte(tbpfx+IdxSplit+"pk"), []byte(fields[0]), nil) == nil                      //添加主键信息
-	r.Succ = r.Succ && t.Db.Put([]byte(tbpfx+IdxSplit+"idx"), []byte(strings.Join(idxs, Split)), nil) == nil     //添加索引信息
-	r.Succ = r.Succ && t.Db.Put([]byte(tbpfx+IdxSplit+"ft"), []byte(strings.Join(fullText, Split)), nil) == nil  //添加索引信息
+	r.Succ = t.Db.Put([]byte(tbpfx), []byte(strings.Join(fields, Split)), nil) == nil                              //添加字段信息
+	r.Succ = r.Succ && t.Db.Put([]byte(tbpfx+IdxSplit+"ty"), []byte(strings.Join(fieldType, Split)), nil) == nil   //添加字段类型信息
+	r.Succ = r.Succ && t.Db.Put([]byte(tbpfx+IdxSplit+"of"), []byte(strings.Join(OrderFields, Split)), nil) == nil //添加字段类型信息
+	r.Succ = r.Succ && t.Db.Put([]byte(tbpfx+IdxSplit+"pk"), []byte(fields[0]), nil) == nil                        //添加主键信息
+	r.Succ = r.Succ && t.Db.Put([]byte(tbpfx+IdxSplit+"idx"), []byte(strings.Join(idxs, Split)), nil) == nil       //添加索引信息
+	r.Succ = r.Succ && t.Db.Put([]byte(tbpfx+IdxSplit+"ft"), []byte(strings.Join(fullText, Split)), nil) == nil    //添加索引信息
 	r.Succ = r.Succ && t.Db.Put([]byte(tbpfx+IdxSplit+"ftlen"), []byte(ftlen), nil) == nil
 
 	r.Succ = r.Succ && t.Db.Put([]byte(Tbspfx+Split+name), []byte{}, nil) == nil //添加表列表
@@ -76,7 +78,9 @@ func (t *TableInfo) GetInfo(name string) (tbif TableInfo) {
 		return
 	}
 	tf.Fields = strings.Split(string(data), Split)
-	data, _ = t.Db.Get([]byte(tbpfx+IdxSplit+"ty"), nil) //打开主键信息
+	data, _ = t.Db.Get([]byte(tbpfx+IdxSplit+"of"), nil) //打开排序字段信息
+	tf.OrderFields = strings.Split(string(data), Split)
+	data, _ = t.Db.Get([]byte(tbpfx+IdxSplit+"ty"), nil) //打开类型信息
 	tf.FieldType = strings.Split(string(data), Split)
 	data, _ = t.Db.Get([]byte(tbpfx+IdxSplit+"pk"), nil) //打开主键信息
 	tf.Pk = string(data)
@@ -123,27 +127,6 @@ func (t *TableInfo) Del(name string) (r ReInfo) {
 //查询、添加、删除、修改都进行该转换，则可保证数据正确、准确。
 func (t *TableInfo) TypeChByte(fieldType, Fieldvalue string) (r []byte) {
 	r = t.FieldTypeChByte(fieldType, Fieldvalue, true)
-	/*
-		FieldType := fieldType
-		if strings.Contains(FieldType, "float") { //float(2),float的格式
-			FieldType = "float"
-		}
-		switch FieldType {
-		case "int":
-			iv, _ := strconv.Atoi(Fieldvalue)
-			r = IntToBytes(iv)
-		case "int64":
-			iv, _ := strconv.Atoi(Fieldvalue)
-			r = Int64ToBytes(int64(iv))
-		case "float":
-			fv, _ := strconv.ParseFloat(Fieldvalue, 64) //只能转Float64
-			r = Float64ToByte(fv)
-
-		default:
-			r = []byte(Fieldvalue)
-		}
-		r = SplitToCh([]byte(r)) //转义
-	*/
 	return
 }
 

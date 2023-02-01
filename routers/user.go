@@ -50,6 +50,9 @@ func userpost(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	params["psw"] = Md5(params["psw"])
+	if params["sj"] == "" {
+		params["sj"] = "now()"
+	}
 	r = Table["u"].Ins(params)
 	json.NewEncoder(w).Encode(r)
 }
