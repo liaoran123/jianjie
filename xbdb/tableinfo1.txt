@@ -22,16 +22,17 @@ const (
 )
 
 //表信息的类。//默认必须第一个字段是主键id
+//设计思路是表信息的更改，不会导致原数据进行任何更改。
 type TableInfo struct {
-	Db     *leveldb.DB
-	Name   string   //表名
-	Fields []string //字段。只记录用户先后顺序添加的Fields名称，凡是添加都在末尾添加。
-	//OrderFields []string //字段。记录用户对各个Field进行位移后排序结果。用作按该顺序显示给用户。
-	FieldType []string //字段对应的类型
-	Pk        string   //默认必须有一个自动增值的主键id
-	Idxs      []string //索引字段的下标，不使用[]int，转换byte太麻烦。
-	FullText  []string //考据级全文搜索索引字段的下标。
-	FTLen     string   //全文搜索的长度，中文默认是7
+	Db          *leveldb.DB
+	Name        string   //表名（表名不可修改，因为会导致原有所有数据进行改动。如果没有数据，可以通过先删除后重新创建来达成。）
+	Fields      []string //字段。只记录用户先后顺序添加的Fields名称，凡是添加都在末尾添加。不作任何修改和删除。
+	OrderFields []string //字段。记录用户对各个Field进行位移包括修改(修改也是删除，再增加一个新的)、删除后的排序结果。用作按该顺序显示给用户。(这样，表数据都不需要改动)
+	FieldType   []string //字段对应的类型
+	Pk          string   //默认必须有一个自动增值的主键id
+	Idxs        []string //索引字段的下标，不使用[]int，转换byte太麻烦。
+	FullText    []string //考据级全文搜索索引字段的下标。
+	FTLen       string   //全文搜索的长度，中文默认是7
 }
 
 func NewTableInfo(DB *leveldb.DB) *TableInfo {
@@ -41,7 +42,7 @@ func NewTableInfo(DB *leveldb.DB) *TableInfo {
 }
 
 //创建/修改一个表，默认第一个字段必须是主键
-func (t *TableInfo) Create(name, ftlen string, fields, fieldType, idxs, fullText []string) (r ReInfo) {
+func (t *TableInfo) Create(name, ftlen string, fields, OrderFields, fieldType, idxs, fullText []string) (r ReInfo) {
 	if len(fieldType) != len(fields) {
 		r.Info = "字段和类型数据不匹配！"
 		return
@@ -49,11 +50,12 @@ func (t *TableInfo) Create(name, ftlen string, fields, fieldType, idxs, fullText
 
 	tbpfx := TbInfopfx + Split + name //表信息前缀
 
-	r.Succ = t.Db.Put([]byte(tbpfx), []byte(strings.Join(fields, Split)), nil) == nil                            //添加字段信息
-	r.Succ = r.Succ && t.Db.Put([]byte(tbpfx+IdxSplit+"ty"), []byte(strings.Join(fieldType, Split)), nil) == nil //添加字段类型信息
-	r.Succ = r.Succ && t.Db.Put([]byte(tbpfx+IdxSplit+"pk"), []byte(fields[0]), nil) == nil                      //添加主键信息
-	r.Succ = r.Succ && t.Db.Put([]byte(tbpfx+IdxSplit+"idx"), []byte(strings.Join(idxs, Split)), nil) == nil     //添加索引信息
-	r.Succ = r.Succ && t.Db.Put([]byte(tbpfx+IdxSplit+"ft"), []byte(strings.Join(fullText, Split)), nil) == nil  //添加索引信息
+	r.Succ = t.Db.Put([]byte(tbpfx), []byte(strings.Join(fields, Split)), nil) == nil                              //添加字段信息
+	r.Succ = r.Succ && t.Db.Put([]byte(tbpfx+IdxSplit+"ty"), []byte(strings.Join(fieldType, Split)), nil) == nil   //添加字段类型信息
+	r.Succ = r.Succ && t.Db.Put([]byte(tbpfx+IdxSplit+"of"), []byte(strings.Join(OrderFields, Split)), nil) == nil //添加字段类型信息
+	r.Succ = r.Succ && t.Db.Put([]byte(tbpfx+IdxSplit+"pk"), []byte(fields[0]), nil) == nil                        //添加主键信息
+	r.Succ = r.Succ && t.Db.Put([]byte(tbpfx+IdxSplit+"idx"), []byte(strings.Join(idxs, Split)), nil) == nil       //添加索引信息
+	r.Succ = r.Succ && t.Db.Put([]byte(tbpfx+IdxSplit+"ft"), []byte(strings.Join(fullText, Split)), nil) == nil    //添加索引信息
 	r.Succ = r.Succ && t.Db.Put([]byte(tbpfx+IdxSplit+"ftlen"), []byte(ftlen), nil) == nil
 
 	r.Succ = r.Succ && t.Db.Put([]byte(Tbspfx+Split+name), []byte{}, nil) == nil //添加表列表
@@ -77,7 +79,9 @@ func (t *TableInfo) GetInfo(name string) (tbif TableInfo) {
 		return
 	}
 	tf.Fields = strings.Split(string(data), Split)
-	data, _ = t.Db.Get([]byte(tbpfx+IdxSplit+"ty"), nil) //打开主键信息
+	data, _ = t.Db.Get([]byte(tbpfx+IdxSplit+"of"), nil) //打开排序字段信息
+	tf.OrderFields = strings.Split(string(data), Split)
+	data, _ = t.Db.Get([]byte(tbpfx+IdxSplit+"ty"), nil) //打开类型信息
 	tf.FieldType = strings.Split(string(data), Split)
 	data, _ = t.Db.Get([]byte(tbpfx+IdxSplit+"pk"), nil) //打开主键信息
 	tf.Pk = string(data)

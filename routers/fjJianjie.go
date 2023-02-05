@@ -85,7 +85,7 @@ func FjJianjiepost(w http.ResponseWriter, req *http.Request) {
 func FjJianjieget(w http.ResponseWriter, req *http.Request) {
 	params := getparas(req)
 	key := Table["j"].Ifo.FieldChByte("id", params["id"])
-	tbd := Table["j"].Select.Record(key)
+	tbd := Table["j"].Select.Record(key, []int{})
 	if tbd == nil {
 		return
 	}
@@ -102,7 +102,7 @@ func FjJianjiedelete(w http.ResponseWriter, req *http.Request, params map[string
 
 	//打开要删除的记录，获取时间，超过3天不能删除
 	key := Table["j"].Ifo.FieldChByte("id", params["id"])
-	tbd := Table["j"].Select.Record(key)
+	tbd := Table["j"].Select.Record(key, []int{})
 	tbm := Table["j"].RDtoMap(tbd.Rd[0])
 	tbd.Release()
 	if tbm["userid"] != params["userid"] { //删除的id和用户id对应才能删除，以防数据错乱和攻击。

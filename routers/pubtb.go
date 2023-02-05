@@ -6,6 +6,7 @@ import (
 	"jianjie/xbdb"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -38,8 +39,16 @@ func pubtbget(w http.ResponseWriter, req *http.Request) {
 	params := getparas(req)
 	tbname := params["tbname"]
 	key := Table[tbname].Ifo.FieldChByte("id", params["id"])
-	tbd := Table[tbname].Select.Record(key)
-	json := Table[tbname].DataToJson(tbd)
+	var sfs []string //strings.Split(params["showFileds"], ",")
+	showFileds := []int{}
+	var ifo xbdb.TableInfo
+	if params["showFileds"] != "" {
+		sfs = strings.Split(params["showFileds"], ",")
+		showFileds = Table[tbname].Ifo.GetFieldIds(sfs) //处理要显示的字段
+	}
+	ifo = Table[tbname].Ifo.GetIfoForFields(Table[tbname].Ifo, sfs)
+	tbd := Table[tbname].Select.Record(key, showFileds)
+	json := Table[tbname].DataToJsonforIfo(tbd, &ifo)
 	w.Write(json.Bytes())
 	json.Reset()
 	xbdb.Bufpool.Put(json)
@@ -134,11 +143,12 @@ func rdTimeout(params map[string]string) bool {
 	}
 	tblimit := make(map[string]float64, 1) //直接在内存设置参数
 	tblimit["j-timeout"] = 3 * 24          //* 60 * 60 * 1000  //j表timeout=3天不能删除
-	tblimit["wz-timeout"] = 3 * 24         //* 60 * 60 * 1000 //j表timeout=3天不能删除
+	tblimit["wz-timeout"] = 3 * 24
+	tblimit["pl-timeout"] = 3 * 24
 
 	tbname := params["tbname"]
 	bid := Table[tbname].Ifo.FieldChByte(Table[tbname].Ifo.Fields[0], params["id"])
-	tbd := Table[tbname].Select.Record(bid)
+	tbd := Table[tbname].Select.Record(bid, []int{})
 	rdmap := Table[tbname].RDtoMap(tbd.Rd[0])
 	rdtime := rdmap[timeoutfield]
 	sj, _ := time.ParseInLocation("2006-01-02 15:04:05", rdtime, time.Local)

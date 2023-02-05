@@ -67,7 +67,7 @@ func userget(w http.ResponseWriter, req *http.Request) {
 	}
 	params["psw"] = Md5(params["psw"])
 	bemali := Table["u"].Ifo.TypeChByte("email", params["email"])
-	tbd := Table["u"].Select.WhereIdx([]byte("email"), bemali, true, 0, -1)
+	tbd := Table["u"].Select.WhereIdx([]byte("email"), bemali, true, 0, -1, []int{}, false)
 	if tbd == nil {
 		r.Info = "密码不正确！"
 		json.NewEncoder(w).Encode(r)
@@ -75,8 +75,11 @@ func userget(w http.ResponseWriter, req *http.Request) {
 	}
 	rdmap := Table["u"].RDtoMap(tbd.Rd[0])
 	tbd.Release()
-	//rd := Table["u"].Split(tbd.Rd[0])
-
+	if rdmap["pass"] == "0" { //被封用户
+		r.Info = "该用户不存在。!"
+		r.Succ = false
+		json.NewEncoder(w).Encode(r)
+	}
 	psw := rdmap["psw"] //string(rd[2])
 	id := rdmap["id"]   //xbdb.BytesToInt(rd[0])
 	fahao := rdmap["fahao"]

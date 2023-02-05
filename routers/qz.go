@@ -90,7 +90,7 @@ func delqz(id, userid string) (r xbdb.ReInfo) {
 		r.Info = "群组存在文章，不能删除。"
 		return
 	}
-	tbd := Table[tbname].Select.Record(pkval)
+	tbd := Table[tbname].Select.Record(pkval, []int{})
 	rdmap := Table[tbname].RDtoMap(tbd.Rd[0])
 	tbd.Release()
 	if rdmap["userid"] == userid { //删除的id和用户id对应才能删除，以防数据错乱和攻击。

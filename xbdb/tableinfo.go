@@ -23,25 +23,31 @@ const (
 
 //表信息的类。//默认必须第一个字段是主键id
 type TableInfo struct {
-	Db          *leveldb.DB
-	Name        string   //表名
-	Fields      []string //字段。只记录用户先后顺序添加的Fields名称，凡是添加都在末尾添加。
-	OrderFields []string //字段。记录用户对各个Field进行位移后的排序结果。用作按该顺序显示给用户。
-	FieldType   []string //字段对应的类型
-	Pk          string   //默认必须有一个自动增值的主键id
-	Idxs        []string //索引字段的下标，不使用[]int，转换byte太麻烦。
-	FullText    []string //考据级全文搜索索引字段的下标。
-	FTLen       string   //全文搜索的长度，中文默认是7
+	db     *leveldb.DB
+	Name   string   //表名
+	Fields []string //字段。只记录用户先后顺序添加的Fields名称，凡是添加都在末尾添加。
+	//OrderFields []string //字段。记录用户对各个Field进行位移后排序结果。用作按该顺序显示给用户。
+	FieldType []string //字段对应的类型
+	Pk        string   //默认必须有一个自动增值的主键id
+	Idxs      []string //索引字段的下标，不使用[]int，转换byte太麻烦。
+	FullText  []string //考据级全文搜索索引字段的下标。
+	FTLen     string   //全文搜索的长度，中文默认是7
 }
 
+/*
 func NewTableInfo(DB *leveldb.DB) *TableInfo {
 	return &TableInfo{
 		Db: DB,
 	}
+}*/
+func NewTableInfo() *TableInfo {
+	return &TableInfo{
+		db: xb,
+	}
 }
 
 //创建/修改一个表，默认第一个字段必须是主键
-func (t *TableInfo) Create(name, ftlen string, fields, OrderFields, fieldType, idxs, fullText []string) (r ReInfo) {
+func (t *TableInfo) Create(name, ftlen string, fields, fieldType, idxs, fullText []string) (r ReInfo) {
 	if len(fieldType) != len(fields) {
 		r.Info = "字段和类型数据不匹配！"
 		return
@@ -49,15 +55,14 @@ func (t *TableInfo) Create(name, ftlen string, fields, OrderFields, fieldType, i
 
 	tbpfx := TbInfopfx + Split + name //表信息前缀
 
-	r.Succ = t.Db.Put([]byte(tbpfx), []byte(strings.Join(fields, Split)), nil) == nil                              //添加字段信息
-	r.Succ = r.Succ && t.Db.Put([]byte(tbpfx+IdxSplit+"ty"), []byte(strings.Join(fieldType, Split)), nil) == nil   //添加字段类型信息
-	r.Succ = r.Succ && t.Db.Put([]byte(tbpfx+IdxSplit+"of"), []byte(strings.Join(OrderFields, Split)), nil) == nil //添加字段类型信息
-	r.Succ = r.Succ && t.Db.Put([]byte(tbpfx+IdxSplit+"pk"), []byte(fields[0]), nil) == nil                        //添加主键信息
-	r.Succ = r.Succ && t.Db.Put([]byte(tbpfx+IdxSplit+"idx"), []byte(strings.Join(idxs, Split)), nil) == nil       //添加索引信息
-	r.Succ = r.Succ && t.Db.Put([]byte(tbpfx+IdxSplit+"ft"), []byte(strings.Join(fullText, Split)), nil) == nil    //添加索引信息
-	r.Succ = r.Succ && t.Db.Put([]byte(tbpfx+IdxSplit+"ftlen"), []byte(ftlen), nil) == nil
+	r.Succ = t.db.Put([]byte(tbpfx), []byte(strings.Join(fields, Split)), nil) == nil                            //添加字段信息
+	r.Succ = r.Succ && t.db.Put([]byte(tbpfx+IdxSplit+"ty"), []byte(strings.Join(fieldType, Split)), nil) == nil //添加字段类型信息
+	r.Succ = r.Succ && t.db.Put([]byte(tbpfx+IdxSplit+"pk"), []byte(fields[0]), nil) == nil                      //添加主键信息
+	r.Succ = r.Succ && t.db.Put([]byte(tbpfx+IdxSplit+"idx"), []byte(strings.Join(idxs, Split)), nil) == nil     //添加索引信息
+	r.Succ = r.Succ && t.db.Put([]byte(tbpfx+IdxSplit+"ft"), []byte(strings.Join(fullText, Split)), nil) == nil  //添加索引信息
+	r.Succ = r.Succ && t.db.Put([]byte(tbpfx+IdxSplit+"ftlen"), []byte(ftlen), nil) == nil
 
-	r.Succ = r.Succ && t.Db.Put([]byte(Tbspfx+Split+name), []byte{}, nil) == nil //添加表列表
+	r.Succ = r.Succ && t.db.Put([]byte(Tbspfx+Split+name), []byte{}, nil) == nil //添加表列表
 	if r.Succ {
 		r.Info = "创建表“" + name + "”成功！"
 	} else {
@@ -70,25 +75,23 @@ func (t *TableInfo) GetInfo(name string) (tbif TableInfo) {
 
 	tbpfx := TbInfopfx + Split + name //表信息前缀
 	tf := TableInfo{}
-	tf.Name = t.Name
+	tf.Name = name //t.Name
 	var data []byte
 	var err error
-	data, err = t.Db.Get([]byte(tbpfx), nil) //打开字段信息
+	data, err = t.db.Get([]byte(tbpfx), nil) //打开字段信息
 	if err != nil {
 		return
 	}
 	tf.Fields = strings.Split(string(data), Split)
-	data, _ = t.Db.Get([]byte(tbpfx+IdxSplit+"of"), nil) //打开排序字段信息
-	tf.OrderFields = strings.Split(string(data), Split)
-	data, _ = t.Db.Get([]byte(tbpfx+IdxSplit+"ty"), nil) //打开类型信息
+	data, _ = t.db.Get([]byte(tbpfx+IdxSplit+"ty"), nil) //打开主键信息
 	tf.FieldType = strings.Split(string(data), Split)
-	data, _ = t.Db.Get([]byte(tbpfx+IdxSplit+"pk"), nil) //打开主键信息
+	data, _ = t.db.Get([]byte(tbpfx+IdxSplit+"pk"), nil) //打开主键信息
 	tf.Pk = string(data)
-	data, _ = t.Db.Get([]byte(tbpfx+IdxSplit+"idx"), nil) //打开索引信息
+	data, _ = t.db.Get([]byte(tbpfx+IdxSplit+"idx"), nil) //打开索引信息
 	tf.Idxs = strings.Split(string(data), Split)
-	data, _ = t.Db.Get([]byte(tbpfx+IdxSplit+"ft"), nil) //打开全文索引信息
+	data, _ = t.db.Get([]byte(tbpfx+IdxSplit+"ft"), nil) //打开全文索引信息
 	tf.FullText = strings.Split(string(data), Split)
-	data, _ = t.Db.Get([]byte(tbpfx+IdxSplit+"ftlen"), nil) //全文索引长度信息
+	data, _ = t.db.Get([]byte(tbpfx+IdxSplit+"ftlen"), nil) //全文索引长度信息
 	tf.FTLen = string(data)
 
 	tbif = tf
@@ -101,9 +104,9 @@ func (t *TableInfo) Del(name string) (r ReInfo) {
 		return
 	}
 	tbpfx := TbInfopfx + Split + name //表信息前缀
-	iter := t.Db.NewIterator(util.BytesPrefix([]byte(tbpfx)), nil)
+	iter := t.db.NewIterator(util.BytesPrefix([]byte(tbpfx)), nil)
 	for iter.Next() {
-		err = t.Db.Delete(iter.Key(), nil)
+		err = t.db.Delete(iter.Key(), nil)
 		if err != nil {
 			r.Info = err.Error()
 			r.Succ = false
@@ -115,6 +118,13 @@ func (t *TableInfo) Del(name string) (r ReInfo) {
 	if err != nil {
 		r.Info = err.Error()
 		r.Succ = false
+		return
+	}
+	err = t.db.Delete([]byte(Tbspfx+Split+name), nil) //删除表列表
+	if err != nil {
+		r.Info = err.Error()
+		r.Succ = false
+		return
 	}
 	r.Info = "删除" + name + "成功！"
 	r.Succ = true
@@ -216,6 +226,43 @@ func (t *TableInfo) GetFieldType(idxfield string) string {
 		}
 	}
 	return ""
+}
+
+//返回字段对应下标
+func (t *TableInfo) GetFieldIdx(fieldname string) int {
+	for i, v := range t.Fields {
+		if fieldname == v {
+			return i
+		}
+	}
+	return -1
+}
+
+//根据获取字段对应的下标
+func (t *TableInfo) GetIfoForFields(Ifo TableInfo, fields []string) (ifo TableInfo) {
+	ifo = Ifo
+	if len(fields) == 0 { //fields==nil 等同。
+		return
+	}
+	ifo.Fields = fields
+	var fieldtype []string
+	for _, v := range fields {
+		fy := Ifo.GetFieldType(v)
+		fieldtype = append(fieldtype, fy)
+	}
+	ifo.FieldType = fieldtype
+	return
+}
+
+//根据获取字段对应的下标
+func (t *TableInfo) GetFieldIds(fields []string) (r []int) {
+	for _, v := range fields {
+		i := t.GetFieldIdx(v)
+		if i != -1 {
+			r = append(r, i)
+		}
+	}
+	return
 }
 
 //根据获取字段对应的类型和下标

@@ -16,18 +16,18 @@ var actmap map[string]func(k, v []byte) (r ReInfo)
 //表的类
 type Table struct {
 	Name   string
-	Db     *leveldb.DB
+	db     *leveldb.DB
 	Select *Select
 	Ac     *Autoinc
 	Ifo    TableInfo
 }
 
-func NewTable(db *leveldb.DB, name string) *Table {
+func NewTable(name string) *Table {
 	return &Table{
 		Name:   name,
-		Db:     db,
-		Select: NewSelect(name, db),
-		Ifo:    NewTableInfo(db).GetInfo(name),
+		db:     xb,
+		Select: NewSelect(name),
+		Ifo:    NewTableInfo().GetInfo(name),
 	}
 }
 
@@ -175,6 +175,15 @@ func (t *Table) StrToByte(params map[string]string) (r [][]byte) {
 	return
 }
 
+/*
+//字符串根据表类型信息转换为byte数据
+func StrToByteForIfo(params map[string]string, ifo TableInfo) (r [][]byte) {
+	for i, v := range ifo.Fields {
+		r = append(r, ifo.TypeChByte(ifo.FieldType[i], params[v]))
+	}
+	return
+}
+*/
 //将记录转换为map
 func (t *Table) RDtoMap(Rd []byte) (r map[string]string) {
 	r = t.FieldValuetoMap(Rd, &t.Ifo)

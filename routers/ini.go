@@ -3,32 +3,30 @@ package routers
 import (
 	"fmt"
 	"jianjie/xbdb"
-	"log"
-
-	"github.com/syndtr/goleveldb/leveldb"
 )
 
-var Xb *leveldb.DB
 var Table map[string]*xbdb.Table
 
 func Ini() {
 	//打开或创建数据库
 	dbpath := ConfigMap["dbpath"].(string)
-	xb, err := leveldb.OpenFile(dbpath+"db", nil)
-	if err != nil {
-		log.Fatal(err)
-	}
+	xbdb.OpenDb(dbpath)
+	/*
+		xb, err := leveldb.OpenFile(dbpath+"db", nil)
+		if err != nil {
+			log.Fatal(err)
+		}*/
 	//创建数据库连接
-	Xb = xb
+
 	//创建表信息结构
-	dbinfo := xbdb.NewTableInfo(Xb)
+	dbinfo := xbdb.NewTableInfo()
 	//删除后添加=修改
 	dbinfo.Del("u")
 	dbinfo.Del("j")
 	dbinfo.Del("d")
 	dbinfo.Del("qz")
 	dbinfo.Del("wz")
-	dbinfo.Del("hf")
+	dbinfo.Del("pl")
 	dbinfo.Del("sc")
 	dbinfo.Del("admin")
 	dbinfo.Del("test")
@@ -36,18 +34,21 @@ func Ini() {
 	//创建表
 	createtbs(dbinfo)
 	//打开表操作结构
-	Table = make(map[string]*xbdb.Table)
-	Table["u"] = xbdb.NewTable(Xb, "u")
-	Table["j"] = xbdb.NewTable(Xb, "j")
-	Table["d"] = xbdb.NewTable(Xb, "d")
-	Table["qz"] = xbdb.NewTable(Xb, "qz")
-	Table["wz"] = xbdb.NewTable(Xb, "wz")
-	Table["hf"] = xbdb.NewTable(Xb, "hf")
-	Table["sc"] = xbdb.NewTable(Xb, "sc")
-	Table["admin"] = xbdb.NewTable(Xb, "admin")
+	Table = xbdb.OpenTableStructs()
+	/*
+		Table = make(map[string]*xbdb.Table)
+		Table["u"] = xbdb.NewTable("u")
+		Table["j"] = xbdb.NewTable("j")
+		Table["d"] = xbdb.NewTable("d")
+		Table["qz"] = xbdb.NewTable("qz")
+		Table["wz"] = xbdb.NewTable("wz")
+		Table["hf"] = xbdb.NewTable("hf")
+		Table["sc"] = xbdb.NewTable("sc")
+		Table["admin"] = xbdb.NewTable("admin")
 
-	//测试代码
-	Table["test"] = xbdb.NewTable(Xb, "test")
+		//测试代码
+		Table["test"] = xbdb.NewTable("test")
+	*/
 	/*
 		params := map[string]string{"zd0": "12", "zd1": "阿弥陀佛"}
 		r := Table["test"].Ins(params)
@@ -59,7 +60,7 @@ func Ini() {
 	*/
 	//打印数据库//用于测试代码
 	//Table["u"].Select.For(Pr0)
-	Table["test"].Select.ForTb(Pr)
+	//Table["test"].Select.ForTb(Pr)
 
 }
 
@@ -91,13 +92,13 @@ func Pr0(k []byte) bool {
 }*/
 func createtbs(dbinfo *xbdb.TableInfo) {
 	if dbinfo.GetInfo("u").FieldType == nil { //创建用户表
-		name := "u"                                                                  //user                                                              //目录表
-		fields := []string{"id", "email", "psw", "fahao", "jianjie", "sj"}           //字段，编码，邮箱，密码，法号。简介，通过（默认。0，则不通过。删除用户设置为0即可）,注册时间。
-		fieldType := []string{"int", "string", "string", "string", "string", "time"} //字段类型
-		idxs := []string{"1", "3"}                                                   //索引字段,fields的下标对应的字段。支持组合查询，字段之间用,分隔
-		fullText := []string{}                                                       //考据级全文搜索索引字段的下标。
-		ftlen := "7"                                                                 //全文搜索的长度，中文默认是7
-		r := dbinfo.Create(name, ftlen, fields, fields, fieldType, idxs, fullText)
+		name := "u"                                                                          //user                                                              //目录表
+		fields := []string{"id", "email", "psw", "fahao", "jianjie", "sj", "pass"}           //字段，编码，邮箱，密码，法号。简介，通过（默认。0，则不通过。删除用户设置为0即可）,注册时间。
+		fieldType := []string{"int", "string", "string", "string", "string", "time", "bool"} //字段类型
+		idxs := []string{"1", "3"}                                                           //索引字段,fields的下标对应的字段。支持组合查询，字段之间用,分隔
+		fullText := []string{}                                                               //考据级全文搜索索引字段的下标。
+		ftlen := "7"                                                                         //全文搜索的长度，中文默认是7
+		r := dbinfo.Create(name, ftlen, fields, fieldType, idxs, fullText)
 		fmt.Printf("r: %v\n", r)
 
 	}
@@ -108,7 +109,7 @@ func createtbs(dbinfo *xbdb.TableInfo) {
 		idxs := []string{"1", "3"}                                                             ////索引字段,fields的下标对应的字段。支持组合查询，字段之间用,分隔
 		fullText := []string{}                                                                 //考据级全文搜索索引字段的下标。
 		ftlen := "7"                                                                           //全文搜索的长度，中文默认是7
-		r := dbinfo.Create(name, ftlen, fields, fields, fieldType, idxs, fullText)
+		r := dbinfo.Create(name, ftlen, fields, fieldType, idxs, fullText)
 		fmt.Printf("r: %v\n", r)
 
 	}
@@ -119,7 +120,7 @@ func createtbs(dbinfo *xbdb.TableInfo) {
 		idxs := []string{}              //索引字段,fields的下标对应的字段。支持组合查询，字段之间用,分隔
 		fullText := []string{}          //考据级全文搜索索引字段的下标。
 		ftlen := "7"                    //全文搜索的长度，中文默认是7
-		r := dbinfo.Create(name, ftlen, fields, fields, fieldType, idxs, fullText)
+		r := dbinfo.Create(name, ftlen, fields, fieldType, idxs, fullText)
 		fmt.Printf("r: %v\n", r)
 
 	}
@@ -130,7 +131,7 @@ func createtbs(dbinfo *xbdb.TableInfo) {
 		idxs := []string{"1", "2"}                                                        //索引字段,fields的下标对应的字段。支持组合查询，字段之间用,分隔
 		fullText := []string{"1"}                                                         //考据级全文搜索索引字段的下标。
 		ftlen := "7"                                                                      //全文搜索的长度，中文默认是7
-		r := dbinfo.Create(name, ftlen, fields, fields, fieldType, idxs, fullText)
+		r := dbinfo.Create(name, ftlen, fields, fieldType, idxs, fullText)
 		fmt.Printf("r: %v\n", r)
 
 	}
@@ -145,19 +146,19 @@ func createtbs(dbinfo *xbdb.TableInfo) {
 		idxs := []string{"1", "3"}                                                                                    //索引字段,fields的下标对应的字段。支持组合查询，字段之间用,分隔。仅提供title搜索。
 		fullText := []string{"5"}                                                                                     //考据级全文搜索索引字段的下标。
 		ftlen := "7"                                                                                                  //全文搜索的长度，中文默认是7
-		r := dbinfo.Create(name, ftlen, fields, fields, fieldType, idxs, fullText)
+		r := dbinfo.Create(name, ftlen, fields, fieldType, idxs, fullText)
 		fmt.Printf("r: %v\n", r)
 
 	}
-	if dbinfo.GetInfo("hf").FieldType == nil { //创建回复表，包括见解、和群组文章或其他
-		name := "hf"                                                                       //目录表
-		fields := []string{"id", "wid", "userid", "fahao", "wtitle", "cont", "pass", "sj"} //字段，编码，文章编码,用户编码,文章标题，内容，创建时间。
+	if dbinfo.GetInfo("pl").FieldType == nil { //创建评论表，包括见解、和群组文章或其他
+		name := "pl"                                                                               //目录表
+		fields := []string{"id", "qzid", "wid", "userid", "fahao", "wtitle", "cont", "pass", "sj"} //字段，编码，群组编码，文章编码,用户编码,文章标题(不是评论标题)，内容，创建时间。
 		//wid为string，兼容int和string的id
-		fieldType := []string{"int", "string", "int", "string", "string", "string", "string", "time"} //字段类型
-		idxs := []string{"1", "2"}                                                                    //索引字段,fields的下标对应的字段。支持组合查询，字段之间用,分隔。组合查询，就是为了避开 where ...and...的情况，直接用组合索引代替解决。
-		fullText := []string{}                                                                        //考据级全文搜索索引字段的下标。
-		ftlen := "7"                                                                                  //全文搜索的长度，中文默认是7
-		r := dbinfo.Create(name, ftlen, fields, fields, fieldType, idxs, fullText)
+		fieldType := []string{"int", "int", "string", "int", "string", "string", "string", "string", "time"} //字段类型
+		idxs := []string{"1", "2", "3"}                                                                      //索引字段,fields的下标对应的字段。支持组合查询，字段之间用,分隔。组合查询，就是为了避开 where ...and...的情况，直接用组合索引代替解决。
+		fullText := []string{}                                                                               //考据级全文搜索索引字段的下标。
+		ftlen := "7"                                                                                         //全文搜索的长度，中文默认是7
+		r := dbinfo.Create(name, ftlen, fields, fieldType, idxs, fullText)
 		fmt.Printf("r: %v\n", r)
 
 	}
@@ -181,7 +182,7 @@ func createtbs(dbinfo *xbdb.TableInfo) {
 		idxs := []string{"1"}                                                     //索引字段,fields的下标对应的字段。支持组合查询，字段之间用,分隔。组合查询，就是为了避开 where ...and...的情况，直接用组合索引代替解决。
 		fullText := []string{}                                                    //考据级全文搜索索引字段的下标。
 		ftlen := "7"                                                              //全文搜索的长度，中文默认是7
-		r := dbinfo.Create(name, ftlen, fields, fields, fieldType, idxs, fullText)
+		r := dbinfo.Create(name, ftlen, fields, fieldType, idxs, fullText)
 		fmt.Printf("r: %v\n", r)
 	}
 	if dbinfo.GetInfo("admin").FieldType == nil { //管理员表
@@ -193,7 +194,7 @@ func createtbs(dbinfo *xbdb.TableInfo) {
 		idxs := []string{"1"}                                                   //索引字段,fields的下标对应的字段。支持组合查询，字段之间用,分隔。组合查询，就是为了避开 where ...and...的情况，直接用组合索引代替解决。
 		fullText := []string{}                                                  //考据级全文搜索索引字段的下标。
 		ftlen := "7"                                                            //全文搜索的长度，中文默认是7
-		r := dbinfo.Create(name, ftlen, fields, fields, fieldType, idxs, fullText)
+		r := dbinfo.Create(name, ftlen, fields, fieldType, idxs, fullText)
 		fmt.Printf("r: %v\n", r)
 	}
 	if dbinfo.GetInfo("test").FieldType == nil { //创建专用测试表
@@ -203,7 +204,7 @@ func createtbs(dbinfo *xbdb.TableInfo) {
 		idxs := []string{"1"}                            //索引字段,fields的下标对应的字段。支持组合查询，字段之间用,分隔。组合查询，就是为了避开 where ...and...的情况，直接用组合索引代替解决。
 		fullText := []string{"2"}                        //考据级全文搜索索引字段的下标。
 		ftlen := "7"                                     //全文搜索的长度，中文默认是7
-		r := dbinfo.Create(name, ftlen, fields, fields, fieldType, idxs, fullText)
+		r := dbinfo.Create(name, ftlen, fields, fieldType, idxs, fullText)
 		fmt.Printf("r: %v\n", r)
 	}
 }

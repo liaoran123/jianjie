@@ -30,7 +30,7 @@ func (t *Table) Insert(vals [][]byte) (r ReInfo) {
 
 //添加一条数据以及相关索引等所有数据，默认数据与字段一一对应。
 func (t *Table) Ins(params map[string]string) (r ReInfo) {
-	if params["id"] == "" { //如果主键为空，则是使用自动增值,只有类型是int时成立。
+	if _, ok := params["id"]; !ok { //如果主键为空，则是使用自动增值,只有类型是int时成立。
 		if t.Ac == nil {
 			t.newAutoinc()
 		}
@@ -49,7 +49,7 @@ func (t *Table) Ins(params map[string]string) (r ReInfo) {
 
 //添加一个kv
 func (t *Table) put(k, v []byte) (r ReInfo) {
-	err = t.Db.Put(k, v, nil) //vals[0]=主键
+	err = t.db.Put(k, v, nil) //vals[0]=主键
 	if err != nil {
 		r.Succ = false
 		r.Info = err.Error()
