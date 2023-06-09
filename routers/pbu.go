@@ -1,7 +1,6 @@
 package routers
 
 import (
-	"bytes"
 	"crypto/md5"
 	"encoding/hex"
 	"sync"
@@ -10,11 +9,12 @@ import (
 var (
 	ConfigMap map[string]interface{} //配置文件
 	mu        sync.RWMutex
-	bufpool   = sync.Pool{
-		New: func() interface{} {
-			return new(bytes.Buffer)
-		},
-	}
+	/*
+		bufpool   = sync.Pool{
+			New: func() interface{} {
+				return new(bytes.Buffer)
+			},
+		}*/
 )
 
 // 返回一个32位md5加密后的字符串
