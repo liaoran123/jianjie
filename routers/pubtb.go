@@ -45,7 +45,7 @@ func pubtbget(w http.ResponseWriter, req *http.Request) {
 		sfs = strings.Split(params["showFileds"], ",")
 		showFileds = Table[tbname].Ifo.GetFieldIds(sfs) //处理要显示的字段
 	}
-	ifo = Table[tbname].Ifo.GetIfoForFields(Table[tbname].Ifo, sfs)
+	ifo = Table[tbname].Ifo.GetIfoForFields(*Table[tbname].Ifo, sfs)
 	tbd := Table[tbname].Select.Record(key, showFileds)
 	json := Table[tbname].DataToJsonforIfoApp(tbd, &ifo)
 	w.Write(json.Bytes())

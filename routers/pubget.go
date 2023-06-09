@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-//根据索引查询，返回json
+// 根据索引查询，返回json
 func PubIDXGet(w http.ResponseWriter, req *http.Request) {
 
 	w.Header().Set("Access-Control-Allow-Origin", "*") //同源策略，不加客户端调用不了。
@@ -34,10 +34,10 @@ func PubIDXGet(w http.ResponseWriter, req *http.Request) {
 	if tbd != nil {
 		var json *bytes.Buffer
 		if len(showFileds) == 0 {
-			json = Table[tbname].DataToJson(tbd)
+			json = Table[tbname].DataToJsonApp(tbd)
 		} else {
-			ifo := Table[tbname].Ifo.GetIfoForFields(Table[tbname].Ifo, sfs)
-			json = Table[tbname].DataToJsonforIfo(tbd, &ifo) //  DataToJson(tbd)
+			ifo := Table[tbname].Ifo.GetIfoForFields(*Table[tbname].Ifo, sfs)
+			json = Table[tbname].DataToJsonforIfoApp(tbd, &ifo) //  DataToJson(tbd)
 		}
 		w.Write(json.Bytes())
 		json.Reset()
@@ -122,10 +122,10 @@ func PubGetTB(w http.ResponseWriter, req *http.Request) {
 	if tbd != nil {
 		var json *bytes.Buffer
 		if len(showFileds) == 0 {
-			json = Table[tbname].DataToJson(tbd)
+			json = Table[tbname].DataToJsonApp(tbd)
 		} else {
-			ifo := Table[tbname].Ifo.GetIfoForFields(Table[tbname].Ifo, sfs)
-			json = Table[tbname].DataToJsonforIfo(tbd, &ifo) //  DataToJson(tbd)
+			ifo := Table[tbname].Ifo.GetIfoForFields(*Table[tbname].Ifo, sfs)
+			json = Table[tbname].DataToJsonforIfoApp(tbd, &ifo) //  DataToJson(tbd)
 		}
 		w.Write(json.Bytes())
 		json.Reset()
@@ -135,7 +135,7 @@ func PubGetTB(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-//根据打开表的Top，顺序或倒序，返回json
+// 根据打开表的Top，顺序或倒序，返回json
 func PubGetTBOne(w http.ResponseWriter, req *http.Request) {
 
 	w.Header().Set("Access-Control-Allow-Origin", "*") //同源策略，不加客户端调用不了。
@@ -159,10 +159,10 @@ func PubGetTBOne(w http.ResponseWriter, req *http.Request) {
 	if tbd != nil {
 		var json *bytes.Buffer
 		if len(showFileds) == 0 {
-			json = Table[tbname].DataToJson(tbd)
+			json = Table[tbname].DataToJsonApp(tbd)
 		} else {
-			ifo := Table[tbname].Ifo.GetIfoForFields(Table[tbname].Ifo, sfs)
-			json = Table[tbname].DataToJsonforIfo(tbd, &ifo) //  DataToJson(tbd)
+			ifo := Table[tbname].Ifo.GetIfoForFields(*Table[tbname].Ifo, sfs)
+			json = Table[tbname].DataToJsonforIfoApp(tbd, &ifo) //  DataToJson(tbd)
 		}
 		w.Write(json.Bytes())
 		json.Reset()
