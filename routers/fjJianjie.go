@@ -89,7 +89,7 @@ func FjJianjieget(w http.ResponseWriter, req *http.Request) {
 	if tbd == nil {
 		return
 	}
-	json := Table["j"].DataToJson(tbd)
+	json := Table["j"].DataToJsonApp(tbd)
 	w.Write(json.Bytes())
 	json.Reset()
 	xbdb.Bufpool.Put(json)

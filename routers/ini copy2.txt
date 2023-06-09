@@ -11,10 +11,15 @@ func Ini() {
 	//打开或创建数据库
 	dbpath := ConfigMap["dbpath"].(string)
 	xbdb.OpenDb(dbpath)
+	/*
+		xb, err := leveldb.OpenFile(dbpath+"db", nil)
+		if err != nil {
+			log.Fatal(err)
+		}*/
+	//创建数据库连接
 
 	//创建表信息结构
 	dbinfo := xbdb.NewTableInfo()
-
 	//删除后添加=修改
 	dbinfo.Del("u")
 	dbinfo.Del("j")
@@ -30,7 +35,29 @@ func Ini() {
 	createtbs(dbinfo)
 	//打开表操作结构
 	Table = xbdb.OpenTableStructs()
+	/*
+		Table = make(map[string]*xbdb.Table)
+		Table["u"] = xbdb.NewTable("u")
+		Table["j"] = xbdb.NewTable("j")
+		Table["d"] = xbdb.NewTable("d")
+		Table["qz"] = xbdb.NewTable("qz")
+		Table["wz"] = xbdb.NewTable("wz")
+		Table["hf"] = xbdb.NewTable("hf")
+		Table["sc"] = xbdb.NewTable("sc")
+		Table["admin"] = xbdb.NewTable("admin")
 
+		//测试代码
+		Table["test"] = xbdb.NewTable("test")
+	*/
+	/*
+		params := map[string]string{"zd0": "12", "zd1": "阿弥陀佛"}
+		r := Table["test"].Ins(params)
+		fmt.Printf("r: %v\n", r)
+
+			params1 := map[string]string{"id": "1", "zd1": "众生颠倒"} //, "zd1": "众生颠倒",, "zd0": "1000"
+			r1 := Table["test"].Upd(params1)
+			fmt.Printf("r1: %v\n", r1)
+	*/
 	//打印数据库//用于测试代码
 	//Table["u"].Select.For(Pr0)
 	//Table["test"].Select.ForTb(Pr)

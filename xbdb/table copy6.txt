@@ -20,15 +20,15 @@ type Table struct {
 	db     *leveldb.DB
 	Select *Select
 	Ac     *Autoinc
-	Ifo    *TableInfo
+	Ifo    TableInfo
 }
 
-func NewTable(db *leveldb.DB, name string) *Table {
+func NewTable(name string) *Table {
 	return &Table{
 		Name:   name,
-		db:     db,
-		Select: NewSelect(db, name),
-		Ifo:    NewTableInfo(db, name),
+		db:     xb,
+		Select: NewSelect(name),
+		Ifo:    NewTableInfo().GetInfo(name),
 	}
 }
 
@@ -73,11 +73,73 @@ func (t *Table) Acts(vals [][]byte, Act string, updatefield []bool) (r ReInfo) {
 	if !r.Succ {
 		return
 	}
-	r = t.AddIdx(vals, Act, updatefield) //添加普通索引
+	r = t.AddIdx(vals, Act, updatefield)
 	if !r.Succ {
 		return
 	}
-	r = t.AddFullIdx(vals, Act, updatefield) //添加全文索引
+	r = t.AddFullIdx(vals, Act, updatefield)
+	//添加表索引
+	/*
+				idx := -1
+				var ivs []string
+				idxfields := ""
+				var idxval, idxvals []byte
+				for _, iv := range t.Ifo.Idxs {
+					if iv == "" {
+						continue
+					}
+					ivs = strings.Split(iv, ",")
+					if updatefield != nil { //修改的情况
+						if !isUpdateField(ivs, updatefield) {
+							continue //不是修改字段则退出，不用添加或删除原有索引
+						}
+					}
+					for i := 0; i < len(ivs); i++ { //组织单个或组合索引key
+						idx, _ = strconv.Atoi(ivs[i])
+						idxval = vals[idx]
+						if len(idxval) == 0 { //不添加空值或nil值的索引。利大于弊。
+							break
+						}
+						idxfields += t.Ifo.Fields[idx]       //累加
+						idxvals = JoinBytes(idxvals, idxval) //累加
+						if i != len(ivs)-1 {                 //不是末尾，则加分隔符
+							idxfields += IdxSplit
+							idxvals = JoinBytes(idxvals, []byte(IdxSplit))
+						}
+					}
+					r = t.ActIDX([]byte(idxfields), idxvals, vals[0], []byte{}, Act)
+					if !r.Succ {
+						return
+					}
+					//重置
+					idxfields = ""
+					idxvals = idxvals[:0]
+				}
+
+			//添加表全文索引
+			ftlen, _ := strconv.Atoi(t.Ifo.FTLen)
+			var ftIdx []string
+			for _, i := range t.Ifo.FullText {
+				if i == "" {
+					continue
+				}
+				idx, _ = strconv.Atoi(i)
+				if updatefield != nil { //修改的情况
+					if !updatefield[idx] { //非修改字段不添加/删除索引
+						continue
+					}
+				}
+				ftIdx = t.ForDisparte(string(vals[idx]), ftlen)
+				for p, f := range ftIdx {
+					t.ActIDX([]byte(t.Ifo.Fields[idx]), []byte(f), vals[0], IntToBytes(p), Act)
+					if !r.Succ {
+						return
+					}
+				}
+			}
+
+		r.Succ = true
+		r.Info = "成功。"*/
 	return
 }
 func (t *Table) AddIdx(vals [][]byte, Act string, updatefield []bool) (r ReInfo) {
@@ -88,8 +150,8 @@ func (t *Table) AddIdx(vals [][]byte, Act string, updatefield []bool) (r ReInfo)
 	var idxval, idxvals []byte
 	for _, iv := range t.Ifo.Idxs {
 		if iv == "" {
-			//r.Succ = true
-			//r.Info = "没有索引"
+			r.Succ = true
+			r.Info = "没有索引"
 			continue
 		}
 		ivs = strings.Split(iv, ",")
@@ -120,8 +182,6 @@ func (t *Table) AddIdx(vals [][]byte, Act string, updatefield []bool) (r ReInfo)
 		idxfields = ""
 		idxvals = idxvals[:0]
 	}
-	r.Succ = true
-	r.Info = "成功。"
 	return
 }
 func (t *Table) AddFullIdx(vals [][]byte, Act string, updatefield []bool) (r ReInfo) {
@@ -138,23 +198,12 @@ func (t *Table) AddFullIdx(vals [][]byte, Act string, updatefield []bool) (r ReI
 				continue
 			}
 		}
-		var patterns []int //搜索词解析模型
-		var iv int
-		for _, v := range t.Ifo.Patterns { //字符串数组转int数组
-			iv, _ = strconv.Atoi(v)
-			patterns = append(patterns, iv)
-		}
-		kws := Analysis(string(vals[idx]), patterns)
-		for i, v := range kws {
-			if v == "" {
-				continue
-			}
-			ftIdx = t.ForDisparte(v, ftlen)
-			for p, f := range ftIdx {
-				r = t.ActIDX([]byte(t.Ifo.Fields[idx]), []byte(f), vals[0], IntToBytes(p+i), Act)
-				if !r.Succ {
-					return
-				}
+
+		ftIdx = t.ForDisparte(string(vals[idx]), ftlen)
+		for p, f := range ftIdx {
+			r = t.ActIDX([]byte(t.Ifo.Fields[idx]), []byte(f), vals[0], IntToBytes(p), Act)
+			if !r.Succ {
+				return
 			}
 		}
 	}
@@ -223,7 +272,7 @@ func StrToByteForIfo(params map[string]string, ifo TableInfo) (r [][]byte) {
 */
 //将记录转换为map
 func (t *Table) RDtoMap(Rd []byte) (r map[string]string) {
-	r = t.FieldValuetoMap(Rd, t.Ifo)
+	r = t.FieldValuetoMap(Rd, &t.Ifo)
 	return
 }
 
@@ -258,61 +307,12 @@ var Bufpool = sync.Pool{
 	},
 }
 
-/*
-	func (t *Table) DataToJson(tbd *TbData) (r *bytes.Buffer) {
-		r = t.DataToJsonforIfo(tbd, t.Ifo)
-		return
-	}
-*/
-func (t *Table) DataToJsonApp(tbd *TbData) (r *bytes.Buffer) {
-	r = t.DataToJsonforIfoApp(tbd, t.Ifo)
+func (t *Table) DataToJson(tbd *TbData) (r *bytes.Buffer) {
+	r = t.DataToJsonforIfo(tbd, &t.Ifo)
 	return
 }
 
-/*
-	func (t *Table) DataToJsonforIfo(tbd *TbData, Ifo *TableInfo) (r *bytes.Buffer) {
-		if tbd == nil {
-			return
-		}
-		r = Bufpool.Get().(*bytes.Buffer)
-		if r.Len() > 0 { //保证数据不混乱
-			r.Reset()
-		}
-		var rdmap map[string]string
-		jsonstr := ""
-		valstr := ""
-		r.WriteString("{\"result\":[")
-		for j, v := range tbd.Rd {
-			if v == nil {
-				continue
-			}
-			r.WriteString("{")
-			rdmap = t.FieldValuetoMap(v, Ifo)
-
-			for i, fv := range Ifo.FieldType {
-				switch fv {
-				case "string", "time", "bool":
-					valstr = strconv.Quote(rdmap[Ifo.Fields[i]])
-				default:
-					valstr = rdmap[Ifo.Fields[i]]
-				}
-				jsonstr = "\"" + Ifo.Fields[i] + "\":" + valstr
-				if i != len(rdmap)-1 {
-					jsonstr += ","
-				}
-				r.WriteString(jsonstr)
-			}
-			r.WriteString("}")
-			if j != len(tbd.Rd)-1 {
-				r.WriteString(",")
-			}
-		}
-		r.WriteString("]}")
-		tbd.Release()
-		return
-	}
-*/
-func (t *Table) DataToJsonforIfoApp(tbd *TbData, Ifo *TableInfo) (r *bytes.Buffer) {
+func (t *Table) DataToJsonforIfo(tbd *TbData, Ifo *TableInfo) (r *bytes.Buffer) {
 	if tbd == nil {
 		return
 	}
@@ -323,7 +323,7 @@ func (t *Table) DataToJsonforIfoApp(tbd *TbData, Ifo *TableInfo) (r *bytes.Buffe
 	var rdmap map[string]string
 	jsonstr := ""
 	valstr := ""
-	r.WriteString("[")
+	r.WriteString("{\"result\":[")
 	for j, v := range tbd.Rd {
 		if v == nil {
 			continue
@@ -352,7 +352,7 @@ func (t *Table) DataToJsonforIfoApp(tbd *TbData, Ifo *TableInfo) (r *bytes.Buffe
 			r.WriteString(",")
 		}
 	}
-	r.WriteString("]")
+	r.WriteString("]}")
 	tbd.Release()
 	return
 }

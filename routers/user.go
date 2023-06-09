@@ -17,8 +17,6 @@ func User(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*") //同源策略，不加客户端调用不了。
 	w.Header().Set("Content-Type", "application/json")
 
-	pubgo.Tj.Brows("/user/" + req.Method)
-
 	//req.usermethod
 	if usermethod == nil {
 		usermethod = make(map[string]func(w http.ResponseWriter, req *http.Request), 4)
@@ -32,6 +30,7 @@ func User(w http.ResponseWriter, req *http.Request) {
 	}
 }
 func userpost(w http.ResponseWriter, req *http.Request) {
+	pubgo.Tj.Brows("/user/" + req.Method)
 	mu.Lock() //leveldb仅支持单进程数据操作。
 	defer mu.Unlock()
 	var r xbdb.ReInfo
@@ -57,6 +56,7 @@ func userpost(w http.ResponseWriter, req *http.Request) {
 	json.NewEncoder(w).Encode(r)
 }
 func userget(w http.ResponseWriter, req *http.Request) {
+	pubgo.Tj.Brows("/user/" + req.Method)
 	var r xbdb.ReInfo
 	params := getparas(req) //  postparas(req)
 

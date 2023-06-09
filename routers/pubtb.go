@@ -15,13 +15,11 @@ var (
 	posts       map[string]func(params map[string]string) (r xbdb.ReInfo) //查询除外的执行都是类同的。
 )
 
-//所有表公共操作，查询，添加，修改，删除
+// 所有表公共操作，查询，添加，修改，删除
 func Pubtb(w http.ResponseWriter, req *http.Request) {
 
 	w.Header().Set("Access-Control-Allow-Origin", "*") //同源策略，不加客户端调用不了。
 	w.Header().Set("Content-Type", "application/json")
-
-	pubgo.Tj.Brows("/pubtb/" + req.Method)
 
 	if pubtbmethod == nil {
 		pubtbmethod = make(map[string]func(w http.ResponseWriter, req *http.Request), 2)
@@ -36,6 +34,7 @@ func Pubtb(w http.ResponseWriter, req *http.Request) {
 }
 
 func pubtbget(w http.ResponseWriter, req *http.Request) {
+	pubgo.Tj.Brows("/pubtb/" + req.Method)
 	params := getparas(req)
 	tbname := params["tbname"]
 	key := Table[tbname].Ifo.FieldChByte("id", params["id"])
@@ -48,12 +47,13 @@ func pubtbget(w http.ResponseWriter, req *http.Request) {
 	}
 	ifo = Table[tbname].Ifo.GetIfoForFields(Table[tbname].Ifo, sfs)
 	tbd := Table[tbname].Select.Record(key, showFileds)
-	json := Table[tbname].DataToJsonforIfo(tbd, &ifo)
+	json := Table[tbname].DataToJsonforIfoApp(tbd, &ifo)
 	w.Write(json.Bytes())
 	json.Reset()
 	xbdb.Bufpool.Put(json)
 }
 func pubtbposts(w http.ResponseWriter, req *http.Request) {
+	pubgo.Tj.Brows("/pubtb/" + req.Method)
 	var r xbdb.ReInfo
 	params := postparas(req)
 	if !store.Verify(params["capid"], params["code"], true) {
@@ -88,7 +88,7 @@ func POST(params map[string]string) (r xbdb.ReInfo) {
 	return
 }
 
-//判断记录是否存在
+// 判断记录是否存在
 func rdexist(params map[string]string) bool {
 	filedname := params["existfiled"]
 	if filedname == "" {
@@ -100,7 +100,7 @@ func rdexist(params map[string]string) bool {
 	return Table[tbname].Select.WhereIdxExist([]byte(filedname), bfiledvalue)
 }
 
-//统计某索引存在的条数
+// 统计某索引存在的条数
 func rdCount(params map[string]string) bool {
 	filedname := params["countfiled"]
 	if filedname == "" {
@@ -135,7 +135,7 @@ func PDELETE(params map[string]string) (r xbdb.ReInfo) {
 	return
 }
 
-//超时不能删除文章
+// 超时不能删除文章
 func rdTimeout(params map[string]string) bool {
 	timeoutfield := params["timeoutfield"] //timeout的字段
 	if timeoutfield == "" {
