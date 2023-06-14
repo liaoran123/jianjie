@@ -28,6 +28,9 @@ func main() {
 	http.HandleFunc("/getone/", routers.PubGetTBOne)
 
 	http.HandleFunc("/user/", routers.User)
+	http.HandleFunc("/user/del/", routers.UserDel)
+	http.HandleFunc("/emali/", routers.Emali)
+	http.HandleFunc("/uppsw/", routers.UpPsw)
 	http.HandleFunc("/jianjie/", routers.FjJianjie)
 	http.HandleFunc("/qz/", routers.Qz)
 

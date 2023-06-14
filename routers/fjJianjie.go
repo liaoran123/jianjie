@@ -34,10 +34,8 @@ func FjJianjie(w http.ResponseWriter, req *http.Request) {
 	}
 }
 func FjJianjiepost(w http.ResponseWriter, req *http.Request) {
-	mu.Lock()
-	defer mu.Unlock()
-	//params := postparas(req)
-	//Table["jianjie"].Ins(params)
+	//mu.Lock()
+	//defer mu.Unlock()
 
 	var r xbdb.ReInfo
 	params := postparas(req)

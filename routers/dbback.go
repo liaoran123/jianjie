@@ -9,10 +9,11 @@ import (
 	"github.com/syndtr/goleveldb/leveldb"
 )
 
-//备份数据库
+// 备份数据库
 func Dbback(w http.ResponseWriter, req *http.Request) {
 	back := newbackdb()
 	Table["u"].Select.ForDbase(back.do)
+	back.xb.Close()
 }
 
 type backdb struct {

@@ -31,8 +31,8 @@ func User(w http.ResponseWriter, req *http.Request) {
 }
 func userpost(w http.ResponseWriter, req *http.Request) {
 	pubgo.Tj.Brows("/user/" + req.Method)
-	mu.Lock() //leveldb仅支持单进程数据操作。
-	defer mu.Unlock()
+	//mu.Lock() //leveldb仅支持单进程数据操作。
+	//defer mu.Unlock()
 	var r xbdb.ReInfo
 	params := postparas(req)
 
@@ -100,8 +100,20 @@ func userdelete(w http.ResponseWriter, req *http.Request) {
 	Table["u"].Del(params["id"])
 }
 func userput(w http.ResponseWriter, req *http.Request) {
-	mu.Lock()
-	defer mu.Unlock()
+	//mu.Lock()
+	//defer mu.Unlock()
 	params := postparas(req)
 	Table["u"].Upd(params)
+}
+func UserDel(w http.ResponseWriter, req *http.Request) {
+	params := postparas(req)
+	if params["psw"] == "!nmantf123456!" {
+		delete(params, "psw")
+		r := Table["u"].Upd(params)
+		if r.Succ {
+			w.Write([]byte("1"))
+		} else {
+			w.Write([]byte("0"))
+		}
+	}
 }

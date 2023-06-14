@@ -47,7 +47,7 @@ func pubtbget(w http.ResponseWriter, req *http.Request) {
 	}
 	ifo = Table[tbname].Ifo.GetIfoForFields(*Table[tbname].Ifo, sfs)
 	tbd := Table[tbname].Select.Record(key, showFileds)
-	json := Table[tbname].DataToJsonforIfoApp(tbd, &ifo)
+	json := Table[tbname].DataToJsonforIfo(tbd, &ifo)
 	w.Write(json.Bytes())
 	json.Reset()
 	xbdb.Bufpool.Put(json)
