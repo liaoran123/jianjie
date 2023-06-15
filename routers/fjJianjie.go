@@ -108,25 +108,21 @@ func FjJianjiedelete(w http.ResponseWriter, req *http.Request, params map[string
 	}
 	sj, _ := time.ParseInLocation("2006-01-02 15:04:05", tbm["sj"], time.Local)
 
-	if time.Since(sj).Hours() > 72 {
-		r.Info = "超过3天不能删除。"
+	if time.Since(sj).Hours() > 7*24 {
+		r.Info = "超过7天不能删除。"
 		json.NewEncoder(w).Encode(r)
 		return
 	}
 	r = Table["j"].Del(params["id"])
 	json.NewEncoder(w).Encode(r)
 }
+
 func FjJianjieput(w http.ResponseWriter, req *http.Request, params map[string]string) {
 	//mu.Lock()
 	//defer mu.Unlock()
 	//var r xbdb.ReInfo
 	//params := postparas(req)
-	/*
-		if !store.Verify(params["capid"], params["code"], true) {
-			r.Info = "验证码不正确！"
-			json.NewEncoder(w).Encode(r)
-			return
-		}*/
+
 	r := Table["j"].Upd(params)
 	json.NewEncoder(w).Encode(r)
 }
